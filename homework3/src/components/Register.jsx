@@ -1,9 +1,47 @@
 /* eslint-disable react/prop-types */
 import { useState } from 'react';
+import React from 'react';
 
 import Button from '@mui/material/Button';
 import TaskAlt from '@mui/icons-material/TaskAlt';
 import TextField from '@mui/material/TextField';
+
+import CakeIcon from '@mui/icons-material/Cake';
+import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+
+import Autocomplete from '@mui/material/Autocomplete';
+import Box from '@mui/material/Box';
+import Link from '@mui/material/Link';
+
+
+import Tooltip from '@mui/material/Tooltip';
+
+
+
+// Define styles
+const styles = {
+    fieldContainer: {
+      marginBottom: '10px',
+      borderRadius: '20px'
+      
+    },
+    fieldInput: {
+      width: '100%',
+      marginBottom: '10px',
+      borderRadius: '20px'
+    },
+  };
+
+  const dateInputStyle = {
+    width: '100%',
+    marginBottom: '10px',
+
+  };
+
+
 
 
 export default function Register(props){
@@ -18,14 +56,90 @@ export default function Register(props){
         birthDate: '',
         city: '',
         streetName: '',
-        houseNumber: ''
+        houseNumber: '',
+        errors: {
+            username: false,
+            password: false,
+            passwordVerify: false,
+            img: false,
+            firstName: false,
+            lastName: false,
+            email: false,
+            birthDate: false,
+            city: false,
+            streetName: false,
+            houseNumber: false
+        }
     });
+
+
+    const cities = ['תל אביב', 'רמת גן', 'נתניה', 'נהריה', 'גבעתיים', 'רעננה', 'הרצליה', 'חולון', 'ראשון לציון', 'חיפה', 'ירושלים', 'בנימינה', 'זכרון יעקב', 'טבריה', 'רמת השרון', 'קריית שמונה', 'קריית גת'];
 
     // for input change
     const handleChange = (e)=>{
+        console.log("inside the handlechange "+e.target.name);
         const {name, value}= e.target;
-        setFormData({...formData, [name]:value});
+        console.log("what name is "+ typeof value);
+        let isValid = true;
+        
+        switch (name) {
+            case 'username': 
+                isValid=/^[A-Za-z0-9!@#$%^&*()-+=_]{1,60}$/.test(value);
+                break;
+
+            case 'password': 
+                isValid=/^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*()-+=])[A-Za-z0-9!@#$%^&*()-+=]{7,12}$/.test(value);
+                break;
+            
+            case 'passwordVerify':
+                isValid = value === formData.password;
+                break;
+            
+            case 'firstName':
+                isValid = /^[A-Za-z]+$/.test(value);
+                break;
+            case 'lastName':
+                isValid = /^[A-Za-z]+$/.test(value);
+                break;
+
+            case 'email':
+                isValid=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+                if (isValid) {
+                    // Calculate age from birthDate
+                    const age = calculateAge(value);
+                    isValid = age > 18 && age <= 120;
+                }
+                break;
+
+            case 'birthDate':
+                isValid = !isNaN(Date.parse(value));
+                break;
+            case 'city':
+                isValid = cities.includes(value);
+                break;
+            case 'streetName':
+                isValid = /^[\u05D0-\u05EA]+$/.test(value);
+                break;
+            case 'houseNumber':
+                isValid = /^\d+$/.test(value) && parseInt(value) > 0;
+                break;
+            
+            default:
+                break;   
+        }
+
+        setFormData((prevFormData) => ({
+            ...prevFormData,
+            [name]: value,
+            errors: {
+                ...prevFormData.errors,
+                [name]: !isValid,
+            },
+        }));
+        
+
     }
+
 
     // for form submission
     const handleSubmit = (e)=>{
@@ -52,12 +166,80 @@ export default function Register(props){
     };
 
     // for file change
-    const handleFileChange = (e)=>{
+    const handleFileChange = (e) => {
         const file = e.target.files[0];
-        if(file){
-            setFormData({...formData, [formData.img]:file});
+        if (file) {
+            // Check if the file extension is .jpg or .jpeg
+            const validExtensions = ['jpg', 'jpeg'];
+            const fileExtension = file.name.split('.').pop().toLowerCase();
+            if (!validExtensions.includes(fileExtension)) {
+                // Set img error to true
+                setFormData(prevFormData => ({
+                    ...prevFormData,
+                    errors: {
+                        ...prevFormData.errors,
+                        img: true
+                    }
+                }));
+            } else {
+                // Clear img error and set selected file
+                setFormData(prevFormData => ({
+                    ...prevFormData,
+                    img: file,
+                    errors: {
+                        ...prevFormData.errors,
+                        img: false
+                    }
+                }));
+            }
         }
-    }
+    };
+    // Handle date change
+    // Handle date change
+    const handleDateChange = (date) => {
+        // Calculate age
+        const age = calculateAge(date);
+        
+        // Check if age is within the desired range (18 to 120 years)
+        const isValidAge = age >= 18 && age <= 120;
+        console.log('isvalid '+ isValidAge)
+        if (!isValidAge) {
+            // Mark the date as invalid if it's not a valid JavaScript Date object
+            setFormData(prevFormData => ({
+                ...prevFormData,
+                errors: {
+                    ...prevFormData.errors,
+                    birthDate: true, 
+                },
+            }));
+            return;
+        }else{
+            setFormData(prevFormData => ({
+                ...prevFormData,
+                birthDate: date,
+                errors: {
+                    ...prevFormData.errors,
+                    birthDate: false
+                },
+            }));
+        }
+
+    };
+
+
+    // Calculate age based on birth date
+    const calculateAge = (birthDate) => {
+        const today = new Date();
+        const dob = new Date(birthDate);
+        let age = today.getFullYear() - dob.getFullYear();
+        const monthDiff = today.getMonth() - dob.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+            age--;
+        }
+        console.log("age is " + age);
+        return age;
+    };
+    
 
     const validForm = () =>{
         //checking username validation
@@ -86,8 +268,8 @@ export default function Register(props){
         if (!formData.email.match(emailRegex)) return false; 
         
         //checking birthDate validation
-        const age = new Date().getFullYear()-formData.birthDate.getFullYear();
-        if(!(age>18&&age<=120)) return false;
+        // const age = new Date().getFullYear()-formData.birthDate.getFullYear();
+        // if(!(age>18&&age<=120)) return false;
 
         //checking city validation
         const cities =['תל אביב','רמת גן','נתניה','נהריה','גבעתיים','רעננה','הרצליה','חולון','ראשון לציון','חיפה','ירושלים','בנימינה','זכרון יעקב','טבריה','רמת השרון','קריית שמונה','קריית גת'];
@@ -103,122 +285,249 @@ export default function Register(props){
         
     };
 
-    const isValid=(field,pattern)=>{
-        return field.match(pattern);
+    const handleCityChange=(e,newCity)=>{
+        //console.log("Selected city:", newCity);
+        setFormData(prevData=>({
+            ...prevData, ['city']:newCity}));
     }
+        
+    //checkbox for not showing the password text
+    // eslint-disable-next-line no-unused-vars
+    const [showPass, setShowPass] = React.useState(false);
+
+    const preventDefault = (event) => event.preventDefault();
+
 
     return(
         <div>
             <h3>Register</h3>
-            <form onSubmit={handleSubmit}>
-            <div>
+            <form onSubmit={handleSubmit} style={{maxWidth:'400px'}}>
+
+            <div style={styles.fieldContainer}>
             <TextField 
                 label={'Username'} 
-                id="margin-dense" 
-                margin="right" 
+                id="username"
+                name="username" 
                 onChange={handleChange} 
                 required
-                error={!isValid(formData.username, /^[A-Za-z0-9!@#$%^&*()-+=_]{1,60}$/)}
-                helperText={!isValid(formData.username, /^[A-Za-z0-9!@#$%^&*()-+=_]{1,60}$/)?'ת לועזיות, מספרים ותווים מיוחדים':''}
+                autoFocus
+                error={formData.errors.username}
+                helperText={formData.errors.username && 'השתמש באותיות לועזיות, מספרים ותווים מיוחדים'}  
+                style={styles.fieldInput}             
             />
+            
             </div>    
-            <div>
+
+            <div style={{...styles.fieldContainer, display: 'flex', justifyContent: 'space-between'}}>
+                <div style={{width: '48%'}}>
+                    <TextField 
+                        label={'First Name'} 
+                        id="firstName" 
+                        name="firstName" 
+                        onChange={handleChange} 
+                        required
+                        error={formData.errors.firstName}
+                        helperText={formData.errors.firstName&&'only strings allowed'}   
+                        style={styles.fieldInput}                  
+                    />
+                </div>
+
+                <div style={{width: '48%'}}>
+                    <TextField 
+                        label={'Last Name'} 
+                        id="lastName" 
+                        name="lastName" 
+                        onChange={handleChange} 
+                        required
+                        error={formData.errors.lastName}
+                        helperText={formData.errors.lastName&&'only strings allowed'}   
+                        style={styles.fieldInput}               
+                        />
+                </div>
                 
+            </div>
+           
+            <div style={styles.fieldContainer}>
+                <Tooltip 
+                    title={formData.errors.password&&'סיסמא מכילה 7-12 תווים, אות גדולה, מספר ותו מיוחד'} 
+                    open={formData.errors.password} 
+                    arrow
+                    placement="right"
+                    enterDelay={500}
+                    leaveDelay={200}
+                    
+                >
+            <TextField 
+                label={'Password'} 
+                id="password"
+                name="password" 
+                type={showPass ? 'text' : 'password'} 
+                onChange={handleChange} 
+                required
+                autoFocus
+                error={formData.errors.password}
+                helperText={formData.errors.password&&'invalid password'}     
+                style={styles.fieldInput}              
+            />
+            </Tooltip>
 
-                <input 
-                    type="text" id="username" name="username" onChange={handleChange} required 
-                    pattern='/^[A-Za-z0-9!@#$%^&*()-+=_]{1,60}$/'
-                    onInvalid={(e)=>e.target.setCustomValidity('השתמש באותיות לועזיות, מספרים ותווים מיוחדים')}
-                    onInput={(e) => e.target.setCustomValidity('')}>
-                </input>
+            
+            </div>  
+
+            <div style={styles.fieldContainer}>
                 
+                <TextField 
+                label={'Verify Password'} 
+                id="passwordVerify"
+                name="passwordVerify"  
+                type="password" 
+                onChange={handleChange} 
+                required
+                error={formData.errors.passwordVerify}
+                helperText={formData.errors.passwordVerify&&'הסיסמאות לא תואמות'} 
+                style={styles.fieldInput}                  
+                />
+            </div>
+
+
+            <div style={styles.fieldContainer}>
+                <Tooltip 
+                    title={formData.errors.email&&'email should be in english letters, special characters and @ will only appears once. the email should ends with .com'} 
+                    
+                    open={formData.errors.email} 
+                    arrow
+                    placement="right"
+                    enterDelay={500}
+                    leaveDelay={200}
+                    
+                >
+                    <TextField 
+                    label={'Email'} 
+                    id="email" 
+                    name="email" 
+                    type="email" 
+                    onChange={handleChange} 
+                    required
+                    error={formData.errors.email}
+                    helperText={formData.errors.email&&'email should be sometext@sometext.com'}
+                    style={styles.fieldInput}                 
+                    />
+                </Tooltip>
+            </div>
+
+            <div style={styles.fieldContainer}>
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <Box >
+                    <DemoContainer components={['DatePicker']} valueType="date">
+                    <div style={dateInputStyle}>
+                        <DatePicker label="Birth Day" 
+                        slots={{ openPickerIcon: CakeIcon }}
+                        id="birthDay" 
+                        name="birthDay"
+                        onChange={handleDateChange}
+                        slotProps={{
+                            textField:{
+                            error: formData.errors.birthDate,
+                            helperText:formData.errors.birthDate&&'Invalid birth date',
+                            },
+                        }}
+                        />
+                        
+                    </div>
+                    {console.log("ccccccc " +formData.errors.birthDate)}
+                    </DemoContainer>
+                    </Box>
+                </LocalizationProvider>
+            </div>
+
+            <div style={styles.fieldContainer}>
+                <TextField 
+                type="file" 
+                id="img" 
+                name="img" 
+                accept='.jpg, .jpeg' 
+                onChange={handleFileChange} 
+                required
+                style={styles.fieldInput}  
+                error={formData.errors.img} 
+                helperText={formData.errors.img&&'only jpeg or jpg images'} 
                 
-                <label htmlFor='username'> :שם משתמש</label>
+                />
+             
+            </div> 
+
+     
+
+            <div style={styles.fieldContainer}>
+                <Autocomplete
+                    options = {cities}
+                    getOptionLabel={(option) => (option)}
+                    onChange={handleCityChange}
+                    renderInput={(params)=>(
+                        <TextField
+                        {...params}
+                        required
+                        label="City"
+                        name="city"
+                        autoComplete='city'
+                        style={styles.fieldInput}  
+                        />
+                    )}
+                />
             </div>
+            
+            <div style={{...styles.fieldContainer, display: 'flex', justifyContent: 'space-between'}}>
+                <div style={{width: '48%'}}>
+                <TextField 
+                    label={'Street Name'} 
+                    id="streetName" 
+                    name="streetName" 
+                    onChange={handleChange} 
+                    required
+                    error={formData.errors.streetName}
+                    helperText={formData.errors.streetName&&'only Hebrew letters are allowed'}     
+                    style={styles.fieldInput}                   
+                    />
+                </div>
 
-            <div> 
-                <input 
-                    type="text" id="password" name="password" onChange={handleChange} required
-                    onInvalid={(e)=>e.target.setCustomValidity('סיסמא מכילה 7-12 תווים, אות גדולה, מספר ותו מיוחד')}
-                    onInput={(e) => e.target.setCustomValidity('')}>
-                </input>
-                <label htmlFor='password'> :סיסמא</label>
+                <div style={{width: '48%'}}>
+                    <TextField 
+                    label={'House Number'} 
+                    id="houseNumber" 
+                    name="houseNumber" 
+                    type="number" 
+                    onChange={handleChange} 
+                    required
+                    error={formData.errors.houseNumber}
+                    helperText={formData.errors.houseNumber&&'only positive numbers allowed'}      
+                    style={styles.fieldInput}            
+                    />
+                </div>
+
             </div>
+           
+            
+            <Box
+                sx={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    marginBottom: '10px',
+                    justifyContent: 'center',
+                    typography: 'body1',
+                    '& > :not(style) ~ :not(style)': {
+                      ml: 2,
+                    },
+                  }}
+                onClick={preventDefault}
+            >
+                <Link href="#" underline="hover">
+                    {'Already have an account? Click to sign in'}
+                </Link>
 
-            <div>
-                <input 
-                    type="text" id="passwordVerify" name="passwordVerify"  required
-                    pattern={formData.password}
-                    onInvalid={(e) => e.target.setCustomValidity('הסיסמאות לא תואמות')} 
-                    onInput={(e) => e.target.setCustomValidity('')}>
-                </input>
-                <label htmlFor='passwordVerify'> :אימות סיסמא</label>
-            </div>
-
-            <div>
-                <input 
-                    type="file" id="img" name="img" accept='.jpg, .jpeg' value={formData.img} onChange={handleChange} required>
-                </input>
-                <label htmlFor='img'> :תמונה</label>
-            </div>
-
-            <div>
-                <input 
-                    type="text" id="firstName" name="firstName" onChange={handleFileChange} required
-                    onInvalid={(e) => e.target.setCustomValidity('הסיסמאות לא תואמות')} 
-                    onInput={(e) => e.target.setCustomValidity('')}>
-                </input>
-                <label htmlFor='firstName'> :שם פרטי</label>
-            </div>
-
-            <div>
-                <input 
-                    type="text" id="lastName" name="lastName" value={formData.lastName} required
-                    onInvalid={(e) => e.target.setCustomValidity('הסיסמאות לא תואמות')} 
-                    onInput={(e) => e.target.setCustomValidity('')}>
-
-                </input>
-                <label htmlFor='lastName'> :שם משפחה</label>
-            </div>
-
-            <div>
                 
-                <input 
-                    type="text" id="email" name="email" value={formData.email} onChange={handleChange} required>
+            </Box>
+            
 
-                </input>
-                <label htmlFor='email'> :כתובת מייל</label>
-            </div>
-
-            <div>
-
-                <input 
-                    type="date" id="birthDate" name="birthDate" value={formData.birthDate} onChange={handleChange} required>
-
-                </input>
-                <label htmlFor='password'> :תאריך לידה</label>
-            </div>
-
-            <div>
-
-                <input type="text" id="city" name="city" value={formData.city} onChange={handleChange} required />
-
-                <label htmlFor='city'> :עיר</label>
-            </div>
-
-            <div>
-                
-                <input type="text" id="streetName" name="streetName" value={formData.streetName} onChange={handleChange} required />
-                <label htmlFor='streetName'> :שם הרחוב</label>
-            </div>
-
-            <div>
-                
-                <input type="number" id="houseNumber" name="houseNumber" value={formData.houseNumber} onChange={handleChange} required />
-                <label htmlFor='houseNumber'> :מספר בית</label>
-            </div>
-
-            {/* <button type="submit">שלח</button> */}
             <Button variant="contained" endIcon={<TaskAlt />}>
                 Send
             </Button>
