@@ -19,7 +19,8 @@ import Link from '@mui/material/Link';
 
 import Tooltip from '@mui/material/Tooltip';
 
-
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
 
 // Define styles
 const styles = {
@@ -44,7 +45,21 @@ const styles = {
 
 
 
-export default function Register(props){
+export default function Register({ switchToLogin }){
+    const initialErrors = {
+        username: false,
+        password: false,
+        passwordVerify: false,
+        img: false,
+        firstName: false,
+        lastName: false,
+        email: false,
+        birthDate: false,
+        city: false,
+        streetName: false,
+        houseNumber: false
+    };
+
     const [formData, setFormData] = useState({
         username: '',
         password: '', 
@@ -72,14 +87,15 @@ export default function Register(props){
         }
     });
 
+    
 
     const cities = ['תל אביב', 'רמת גן', 'נתניה', 'נהריה', 'גבעתיים', 'רעננה', 'הרצליה', 'חולון', 'ראשון לציון', 'חיפה', 'ירושלים', 'בנימינה', 'זכרון יעקב', 'טבריה', 'רמת השרון', 'קריית שמונה', 'קריית גת'];
 
     // for input change
     const handleChange = (e)=>{
-        console.log("inside the handlechange "+e.target.name);
+
         const {name, value}= e.target;
-        console.log("what name is "+ typeof value);
+
         let isValid = true;
         
         switch (name) {
@@ -104,11 +120,6 @@ export default function Register(props){
 
             case 'email':
                 isValid=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-                if (isValid) {
-                    // Calculate age from birthDate
-                    const age = calculateAge(value);
-                    isValid = age > 18 && age <= 120;
-                }
                 break;
 
             case 'birthDate':
@@ -140,42 +151,105 @@ export default function Register(props){
 
     }
 
+    
 
+    //for singing up - good form
+    const [openSnackbar, setOpenSnackbar] = React.useState(false);
+      
     // for form submission
     const handleSubmit = (e)=>{
         e.preventDefault();
-
-        if(validForm()){
-            props.registerUser(formData); //call the parent
-            setFormData({
-                username: '',
-                password: '', 
-                passwordVerify: '', 
-                img: '', 
-                firstName: '',
-                lastName: '',
-                email: '',
-                birthDate: '',
-                city: '',
-                streetName: '',
-                houseNumber: ''
-            });
-        }else{
-            alert('Please fill out all the fields correctly');
+        
+        console.log("user is "+JSON.stringify(formData));
+        
+        // Check if any required fields are empty
+        if (
+            formData.username === '' ||
+            formData.password === '' ||
+            formData.passwordVerify === '' ||
+            formData.firstName === '' ||
+            formData.lastName === '' ||
+            formData.email === '' ||
+            formData.birthDate === '' ||
+            formData.city === '' ||
+            formData.streetName === '' ||
+            formData.houseNumber === ''
+        ) {
+            // Display an error message or handle the empty fields as needed
+            // For now, we'll just return and prevent further processing
+            return;
         }
+
+        const newUser = {
+            username: formData.username,
+            password: formData.password,
+            img: formData.img,
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            email: formData.email,
+            birthDate: formData.birthDate,
+            city: formData.city,
+            streetName: formData.streetName,
+            houseNumber: formData.houseNumber
+        };
+
+        // Get existing users data from local storage or initialize an empty array
+        const existingUsersData = JSON.parse(localStorage.getItem('users')) || [];
+
+        // Add the new user to the existing users data array
+        const updatedUsersData = [...existingUsersData, newUser];
+
+        // Save the updated users data array to local storage
+        localStorage.setItem('users', JSON.stringify(updatedUsersData));
+
+        //assuming the form is valid since im checking it during the fields
+        //props.registerUser(JSON.stringify(formData));
+        
+        // Clear the form data
+        setFormData({
+            username: '',
+            password: '',
+            passwordVerify: '',
+            img: '',
+            firstName: '',
+            lastName: '',
+            email: '',
+            birthDate: '',
+            city: '',
+            streetName: '',
+            houseNumber: '',
+            errors: { ...initialErrors } // Reset errors
+        });
+        document.getElementById('myForm').reset();
+
+        
+
+        setOpenSnackbar(true);
     };
+
+    const handleCloseSnackbar = (event, reason) => {
+        if (reason === 'clickaway') {
+          return;
+        }
+    
+        setOpenSnackbar(false);
+      };
+
 
     // for file change
     const handleFileChange = (e) => {
-        const file = e.target.files[0];
+        const file = e.target.files[0].name;
+
         if (file) {
             // Check if the file extension is .jpg or .jpeg
             const validExtensions = ['jpg', 'jpeg'];
-            const fileExtension = file.name.split('.').pop().toLowerCase();
+            const fileExtension = file.split('.').pop().toLowerCase();
+
             if (!validExtensions.includes(fileExtension)) {
                 // Set img error to true
                 setFormData(prevFormData => ({
                     ...prevFormData,
+                    img: '',
                     errors: {
                         ...prevFormData.errors,
                         img: true
@@ -186,6 +260,7 @@ export default function Register(props){
                 setFormData(prevFormData => ({
                     ...prevFormData,
                     img: file,
+
                     errors: {
                         ...prevFormData.errors,
                         img: false
@@ -193,16 +268,16 @@ export default function Register(props){
                 }));
             }
         }
+        
     };
-    // Handle date change
+
     // Handle date change
     const handleDateChange = (date) => {
-        // Calculate age
+
         const age = calculateAge(date);
         
         // Check if age is within the desired range (18 to 120 years)
         const isValidAge = age >= 18 && age <= 120;
-        console.log('isvalid '+ isValidAge)
         if (!isValidAge) {
             // Mark the date as invalid if it's not a valid JavaScript Date object
             setFormData(prevFormData => ({
@@ -226,7 +301,6 @@ export default function Register(props){
 
     };
 
-
     // Calculate age based on birth date
     const calculateAge = (birthDate) => {
         const today = new Date();
@@ -236,57 +310,55 @@ export default function Register(props){
         if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
             age--;
         }
-        console.log("age is " + age);
         return age;
     };
     
 
-    const validForm = () =>{
-        //checking username validation
-        const usernameRegex = /^[A-Za-z0-9!@#$%^&*()-+=_]{1,60}$/;
-        if (!formData.username.match(usernameRegex)) return false;
+    // const validForm = () =>{
+    //     //checking username validation
+    //     const usernameRegex = /^[A-Za-z0-9!@#$%^&*()-+=_]{1,60}$/;
+    //     if (!formData.username.match(usernameRegex)) return false;
         
-        // checking passwords validation
-        const passwordRegex = /^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*()-+=])[A-Za-z0-9!@#$%^&*()-+=]{7,12}$/;
-        if(!formData.password.match(passwordRegex)) return false;
+    //     // checking passwords validation
+    //     const passwordRegex = /^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*()-+=])[A-Za-z0-9!@#$%^&*()-+=]{7,12}$/;
+    //     if(!formData.password.match(passwordRegex)) return false;
 
-        // checking password confirmation
-        if(formData.password !== formData.passwordVerify) return false;
+    //     // checking password confirmation
+    //     if(formData.password !== formData.passwordVerify) return false;
 
-        // checking picture format
-        const isGoodPicture = ['jpg', 'ipeg'];
-        const fileExtenstion = formData.img.split('.').pop().toLowerCase();
-        if(!isGoodPicture.includes(fileExtenstion)) return false;
+    //     // checking picture format
+    //     const isGoodPicture = ['jpg', 'ipeg'];
+    //     const fileExtenstion = formData.img.split('.').pop().toLowerCase();
+    //     if(!isGoodPicture.includes(fileExtenstion)) return false;
 
-        //checking firstName validation
-        if(typeof formData.firstName !== 'string') return false;
-        //checking lastName validation
-        if(typeof formData.lastName !== 'string') return false;
+    //     //checking firstName validation
+    //     if(typeof formData.firstName !== 'string') return false;
+    //     //checking lastName validation
+    //     if(typeof formData.lastName !== 'string') return false;
 
-        //checking email validation
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!formData.email.match(emailRegex)) return false; 
+    //     //checking email validation
+    //     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    //     if (!formData.email.match(emailRegex)) return false; 
         
-        //checking birthDate validation
-        // const age = new Date().getFullYear()-formData.birthDate.getFullYear();
-        // if(!(age>18&&age<=120)) return false;
+    //     //checking birthDate validation
+    //     // const age = new Date().getFullYear()-formData.birthDate.getFullYear();
+    //     // if(!(age>18&&age<=120)) return false;
 
-        //checking city validation
-        const cities =['תל אביב','רמת גן','נתניה','נהריה','גבעתיים','רעננה','הרצליה','חולון','ראשון לציון','חיפה','ירושלים','בנימינה','זכרון יעקב','טבריה','רמת השרון','קריית שמונה','קריית גת'];
-        if(!cities.includes(formData.city)) return false;
+    //     //checking city validation
+    //     const cities =['תל אביב','רמת גן','נתניה','נהריה','גבעתיים','רעננה','הרצליה','חולון','ראשון לציון','חיפה','ירושלים','בנימינה','זכרון יעקב','טבריה','רמת השרון','קריית שמונה','קריית גת'];
+    //     if(!cities.includes(formData.city)) return false;
 
-        //checking street name validation
-        if(typeof formData.streetName !== 'string') return false;
+    //     //checking street name validation
+    //     if(typeof formData.streetName !== 'string') return false;
 
-        //checking street number validation
-        if(isNaN(formData.houseNumber) || formData.houseNumber <= 0) return false;
+    //     //checking street number validation
+    //     if(isNaN(formData.houseNumber) || formData.houseNumber <= 0) return false;
 
-        return true;
+    //     return true;
         
-    };
+    // };
 
     const handleCityChange=(e,newCity)=>{
-        //console.log("Selected city:", newCity);
         setFormData(prevData=>({
             ...prevData, ['city']:newCity}));
     }
@@ -301,7 +373,7 @@ export default function Register(props){
     return(
         <div>
             <h3>Register</h3>
-            <form onSubmit={handleSubmit} style={{maxWidth:'400px'}}>
+            <form id='myForm' onSubmit={handleSubmit} style={{maxWidth:'400px'}}>
 
             <div style={styles.fieldContainer}>
             <TextField 
@@ -434,7 +506,6 @@ export default function Register(props){
                         />
                         
                     </div>
-                    {console.log("ccccccc " +formData.errors.birthDate)}
                     </DemoContainer>
                     </Box>
                 </LocalizationProvider>
@@ -473,6 +544,7 @@ export default function Register(props){
                         style={styles.fieldInput}  
                         />
                     )}
+                    
                 />
             </div>
             
@@ -520,17 +592,27 @@ export default function Register(props){
                   }}
                 onClick={preventDefault}
             >
-                <Link href="#" underline="hover">
+                <Link href="#" underline="hover" onClick={switchToLogin}>
                     {'Already have an account? Click to sign in'}
                 </Link>
 
                 
             </Box>
             
-
-            <Button variant="contained" endIcon={<TaskAlt />}>
+               
+            <Button type='submit' variant="contained" endIcon={<TaskAlt />}>
                 Send
             </Button>
+            <Snackbar open={openSnackbar} autoHideDuration={6000} onClose={handleCloseSnackbar} anchorOrigin={{vertical:'top', horizontal:'center'}}>
+                <Alert
+                onClose={handleCloseSnackbar}
+                severity="success"
+                variant="filled"
+                sx={{ width: '100%' }}
+                >
+                Account Created, Thank You
+                </Alert>
+            </Snackbar>
             </form>
         </div>
     );
