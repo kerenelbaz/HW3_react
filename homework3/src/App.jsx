@@ -1,55 +1,118 @@
-/* eslint-disable no-unused-vars */
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState, useEffect } from 'react';
 import Register from './components/Register';
 import Login from './components/Login';
-
-
+import EditDetails from './components/EditDetails';
+import Profile_new from './components/Profile_new';
+import SystemAdmin from './components/SystemAdmin';
 
 function App() {
+  const [users, setUsers] = useState([]);
   const [showRegister, setShowRegister] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userLogged, setUserLogged] = useState(JSON.parse(localStorage.getItem('userLogged')));
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
+  // eslint-disable-next-line no-unused-vars
   const handleSignInClick = () => {
     setShowRegister(false);
   };
 
-  const [users, setUsers] = useState([]);
-
-  function saveUsers(users) {
-    localStorage.setItem('users', JSON.stringify(users));
-  }
-
-  function registerUser(user){
-    // Update the users array immutably
+  // eslint-disable-next-line no-unused-vars
+  function registerUser(user) {
     const updatedUsers = [...users, user];
-
-    // Update state with the new users array
     setUsers(updatedUsers);
-    
-    // Save updated usersData to local storage
     localStorage.setItem('users', JSON.stringify(users));
   }
-  
+
+  // useEffect(() => {
+  //   const userLogged = localStorage.getItem('userLogged');
+  //   if (userLogged) {
+  //     setIsLoggedIn(true);
+  //   }
+  // }, [isLoggedIn]); // Include isLoggedIn as a dependency
+  useEffect(() => {
+    const userLoggedString = localStorage.getItem('userLogged');
+    if (userLoggedString) {
+      try {
+        const userLogged = JSON.parse(userLoggedString);
+        setUserLogged(userLogged);
+        setIsLoggedIn(true);
+        if(userLogged.username === 'admin')
+          setIsAdmin(true);
+      } catch (error) {
+        console.error('Error parsing userLogged data:', error);
+        // Handle parsing error (e.g., reset userLogged state)
+        setUserLogged(null);
+        setIsLoggedIn(false);
+      }
+    }
+  }, []);
+
   const switchToLogin = () => {
     setShowRegister(false);
   };
 
+  //function that gets triggered when the user successfully logs in. and save the active user to the local storage
+  const handleLogin = (user) => {
+    setUserLogged(user);
+    localStorage.setItem('userLogged', JSON.stringify(user));
+    setIsLoggedIn(true);
+    if(user.username === 'admin')
+          setIsAdmin(true);
+  };
+  
+  const handleLogout = () => {
+    setUserLogged(null);
+    localStorage.removeItem('userLogged');
+    setIsLoggedIn(false);
+    setIsAdmin(false)
+  };
+
+  // const handleEditClick = () => {
+  //   setEditing(true);
+  // };
+
+  const handleCancel = () => {
+    setIsEditingProfile(false);
+  };
+
+  const handleSaveChanges = (updatedUser) => {
+    setUserLogged(updatedUser);
+    localStorage.setItem('userLogged', JSON.stringify(updatedUser));
+    setIsEditingProfile(false);
+  };
+
+  // //function to check if user is looged as ADMIN
+  // const toggleAdminStatus = () => {
+  //   setIsAdmin(!isAdmin);
+  // };
+
   return (
-    <>
-      <div><h2>Hey System Users</h2>
-        {showRegister ? (
-          <Register switchToLogin={switchToLogin}/>
-        ):(
-          <Login/>
-        )}
-        
-        
-      </div>
-      
-    </>
-  )
+    <div>
+      <h2>Hey System Users</h2>
+      {isLoggedIn && userLogged && isAdmin ? ( // Check if the user is logged in and is an admin
+        <SystemAdmin user={userLogged} onLogout={handleLogout} />
+      ) : (
+        // Render login/register components for regular users
+        <div>
+          {isLoggedIn ? (
+            isEditingProfile ? (
+              <EditDetails user={userLogged} onLogout={handleLogout} setIsEditingProfile={setIsEditingProfile} onSave={handleSaveChanges} onCancel={handleCancel}/>
+            ) : (
+              <Profile_new user={userLogged} onLogout={handleLogout} onEdit={setIsEditingProfile} />
+            )
+          ) : (
+            showRegister ? (
+              <Register switchToLogin={switchToLogin} />
+            ) : (
+              <Login setIsLoggedIn={setIsLoggedIn} onLogin={handleLogin} />
+            )
+          )}
+        </div>
+      )}
+    </div>
+  );
 }
 
-export default App
+export default App;

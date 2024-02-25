@@ -1,55 +1,36 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { useState } from 'react';
-import Avatar from '@mui/joy/Avatar';
 import dayjs from 'dayjs';
-
 import Box from '@mui/joy/Box';
 import Button from '@mui/joy/Button';
-import ButtonGroup from '@mui/joy/ButtonGroup';
 import Card from '@mui/joy/Card';
 import CardContent from '@mui/joy/CardContent';
-import CardOverflow from '@mui/joy/CardOverflow';
-import CardActions from '@mui/joy/CardActions';
-
-import Typography from '@mui/joy/Typography';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import CakeIcon from '@mui/icons-material/Cake';
-//import { useDateField } from '@mui/x-date-pickers/DateField/useDateField';
-
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
+import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 
 const cities = ['כפר יונה', 'תל אביב', 'רמת גן', 'נתניה', 'נהריה', 'גבעתיים', 'רעננה', 'הרצליה', 'חולון', 'ראשון לציון', 'חיפה', 'ירושלים', 'בנימינה', 'זכרון יעקב', 'טבריה', 'רמת השרון', 'קריית שמונה', 'קריית גת'];
 
-export default function Profile({ onLogout }) {
-
-  Profile.propTypes = {
-    onLogout: PropTypes.func.isRequired,
-  };
+const EditDetails = ({ user, onSave, onCancel, setIsEditingProfile }) => {
+    const [userData, setUserData] = useState(() => {
+        const storedUserData = JSON.parse(localStorage.getItem('userLogged'));
+        // Check if user data exists in local storage
+        if (storedUserData) {
+          // If user data exists, add the 'passwordVerify' attribute
+          storedUserData.passwordVerify = storedUserData.password;
+          return storedUserData;
+        } else {
+          // If user data doesn't exist, return an empty object
+          return {};
+        }
+      });
   const [editing, setEditing] = useState(false);
-  //const [userData, setUserData] = useState(JSON.parse(localStorage.getItem('userLogged')));
-  
-  const [userData, setUserData] = useState(() => {
-    const storedUserData = JSON.parse(localStorage.getItem('userLogged'));
-    // Check if user data exists in local storage
-    if (storedUserData) {
-      // If user data exists, add the 'passwordVerify' attribute
-      storedUserData.passwordVerify = storedUserData.password;
-      return storedUserData;
-    } else {
-      // If user data doesn't exist, return an empty object
-      return {};
-    }
-  });
-
-  
-  console.log('at the first time entered', userData);
 
   const [openSnackbarSave, setOpenSnackbarSave] = React.useState(false);
   const [openSnackbarErros, setOpenSnackbarErros] = React.useState(false);
@@ -62,7 +43,14 @@ export default function Profile({ onLogout }) {
     }
 
     setOpenTakenUsernameSnackbar(false);
-  };
+};
+
+const handleCloseSnackbarError = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setOpenSnackbarErros(false);
+  }
 
   const handleCloseSnackbarSave = (event, reason) => {
     if (reason === 'clickaway') {
@@ -72,31 +60,13 @@ export default function Profile({ onLogout }) {
     setOpenSnackbarSave(false);
   };
 
-  const handleCloseSnackbarError = (event, reason) => {
-    if (reason === 'clickaway') {
-      return;
-    }
-    setOpenSnackbarErros(false);
-  }
-
-
-  const handleLogout = () => {
-    // Call the onLogout function passed from the parent component
-    onLogout();
+  const handleSaveChanges = () => {
+    // Save the changes made in the form
+    // Update user data in localStorage or send it to the server
+    // For demonstration, let's just update the state
+    localStorage.setItem('userLogged', JSON.stringify(userData));
+    setEditing(false);
   };
-
-
-  // const handleEditAccount = () => {
-  //   setEditing(true);
-  // };
-
-  // const handleSaveChanges = () => {
-  //   // Save the changes made in the form
-  //   // Update user data in localStorage or send it to the server
-  //   // For demonstration, let's just update the state
-  //   localStorage.setItem('userLogged', JSON.stringify(userData));
-  //   setEditing(false);
-  // };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -105,16 +75,6 @@ export default function Profile({ onLogout }) {
       [name]: value
     }));
   };
-
-  // const handleChange = (e) => {
-  //   const { name, value } = e.target;
-  //   setUserData(prevData => ({
-  //     ...prevData,
-  //     [name]: value,
-  //     // Only set passwordVerify if the name is 'passwordVerify'
-  //     ...(name === 'passwordVerify' && { passwordVerify: value })
-  //   }));
-  // };
 
   const handleDateChange = (date) => {
 
@@ -150,7 +110,6 @@ export default function Profile({ onLogout }) {
     }
     return age;
   };
-
 
   const handleFileChange = (e) => {
     const file = e.target.files[0].name;
@@ -203,6 +162,16 @@ export default function Profile({ onLogout }) {
     //return houseNumberRegex.test(houseNumber) && parseInt(houseNumber);
   }
 
+  const handleEditAccount = () => {
+    setEditing(true);
+  };
+
+  const handleCancel = () => {
+    onCancel();
+    setIsEditingProfile(false); // Call setIsEditingProfile to update the state
+  };
+  
+
 
   const validBD = (dateOfBirth) => {
     const dob = new Date(dateOfBirth);
@@ -220,8 +189,6 @@ export default function Profile({ onLogout }) {
     }
     return true;
   }
-
-
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -251,27 +218,32 @@ export default function Profile({ onLogout }) {
     }
 
     if (isValidUsername && isValidPassword && isValidVerifyPass && isValidFirstname && isValidLastname && isValidStreet && isValidHoseNumber && isValidBDate) {
+        
       console.log('Form is valid, changed details');
+
+      const users = JSON.parse(localStorage.getItem('users'));
+      const userLoggedin = JSON.parse(localStorage.getItem('userLogged')).username;
+      const usernameToUpdate = userLoggedin;
+      const userToUpdateIndex = users.findIndex(user => user.username === usernameToUpdate);
+
       const storedUsers = JSON.parse(localStorage.getItem('users')) || [];
       const isUsernameTaken = storedUsers.some(user => user.username === userData.username);
-      
-      if (!isUsernameTaken) {
+
+      //const userToUpdateIndex = users.findIndex(user => user.username === usernameToUpdate);
+
+      if (isUsernameTaken && users[userToUpdateIndex].username === userData.username || !isUsernameTaken && users[userToUpdateIndex].username === userData.username) {
 
         //change the user from the local storage
 
         // Step 1: Retrieve the array of users from local storage
-        const users = JSON.parse(localStorage.getItem('users'));
-        const userLoggedin = JSON.parse(localStorage.getItem('userLogged')).username;
-        console.log('Users ',users); 
-        console.log('Usersdata.username is', userData.username);
+        //const users = JSON.parse(localStorage.getItem('users'));
+        //const userLoggedin = JSON.parse(localStorage.getItem('userLogged')).username;
+        
         // Step 2: Find the specific user whose details you want to change
-        const usernameToUpdate = userLoggedin;
-        const userToUpdateIndex = users.findIndex(user => user.username === usernameToUpdate);
-        console.log('User to update'+userToUpdateIndex);
+        //const usernameToUpdate = userLoggedin;
+        //const userToUpdateIndex = users.findIndex(user => user.username === usernameToUpdate);
         // Step 3: Update the details of that user
-        if (userToUpdateIndex !== -1) { // Check if the user was found
-
-          users[userToUpdateIndex].username = userData.username;
+        users[userToUpdateIndex].username = userData.username;
           users[userToUpdateIndex].password = userData.password;
           users[userToUpdateIndex].firstName = userData.firstName;
           users[userToUpdateIndex].lastName = userData.lastName;
@@ -291,14 +263,10 @@ export default function Profile({ onLogout }) {
 
           setTimeout(() => {
             setEditing(false);
+            setIsEditingProfile(false);
             setUserData(userUpdated);
           }, 7000);
-
-
-
-        } else {
-          console.log('User not found');
-        }
+        
         
       } else {
         console.log('Username is already used by another user');
@@ -327,24 +295,18 @@ export default function Profile({ onLogout }) {
   }
 
 
+
   const handleCityChange = (e, newCity) => {
     setUserData(prevData => ({
       ...prevData, ['city']: newCity
     }));
   }
 
-  let loggedUser = JSON.parse(localStorage.getItem('userLogged'));
+  //let loggedUser = JSON.parse(localStorage.getItem('userLogged'));
+
   return (
-    <Card
-      sx={{
-        width: 420,
-        maxWidth: '100%',
-        boxShadow: 'lg',
-      }}
-    >
-      {editing ? ( // Conditionally render edit form if editing is true
-        <>
-          <CardContent>
+    <Card sx={{ width: 420, maxWidth: '100%', boxShadow: 'lg' }}>
+      <CardContent>
             <form id='myForm' onSubmit={handleSubmit}>
 
 
@@ -479,7 +441,7 @@ export default function Profile({ onLogout }) {
 
               <div style={{ display: 'flex', gap: '114px' }}>
                 <Button type='submit'>Save Changes</Button>
-                <Button onClick={() => setEditing(false)}>Cancel</Button>
+                <Button onClick={handleCancel}>Cancel</Button>
               </div>
 
               <Snackbar open={openSnackbarSave} autoHideDuration={6000} onClose={handleCloseSnackbarSave} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
@@ -519,42 +481,14 @@ export default function Profile({ onLogout }) {
             </form>
 
           </CardContent>
-
-        </>
-      ) : ( // Render user details and buttons if not editing
-        <>
-          <CardContent sx={{ alignItems: 'center', textAlign: 'center' }}>
-            <Avatar src="/static/images/avatar/1.jpg" sx={{ '--Avatar-size': '7rem' }} />
-            <br />
-            <Typography level="title-lg">{loggedUser.username}</Typography>
-            <Typography level="body-sm" sx={{ maxWidth: '24ch' }}>
-              {loggedUser.email}<br />
-              {loggedUser.city}
-              פרטים על האיש
-            </Typography>
-            <Box
-              sx={{
-                display: 'flex',
-                gap: 2,
-                mt: 2,
-                '& > button': { borderRadius: '2rem' },
-              }}
-            >
-            </Box>
-          </CardContent>
-          <CardOverflow sx={{ bgcolor: 'background.level1' }}>
-            <CardActions buttonFlex="1">
-              <ButtonGroup variant="outlined" sx={{ bgcolor: 'background.surface' }}>
-                <Button onClick={() => setEditing(true)}>Edit Account</Button> {/* Set editing to true when clicking Edit Account button */}
-                <Button>Game</Button>
-                <Button onClick={handleLogout}>Log Out</Button>
-              </ButtonGroup>
-            </CardActions>
-          </CardOverflow>
-        </>
-      )}
     </Card>
   );
+};
 
+EditDetails.propTypes = {
+  user: PropTypes.object.isRequired,
+  onSave: PropTypes.func.isRequired,
+  onCancel: PropTypes.func.isRequired,
+};
 
-}
+export default EditDetails;

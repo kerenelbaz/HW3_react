@@ -25,27 +25,27 @@ import Alert from '@mui/material/Alert';
 // Define styles
 const styles = {
     fieldContainer: {
-      marginBottom: '10px',
-      borderRadius: '20px'
-      
+        marginBottom: '10px',
+        borderRadius: '20px'
+
     },
     fieldInput: {
-      width: '100%',
-      marginBottom: '10px',
-      borderRadius: '20px'
+        width: '100%',
+        marginBottom: '10px',
+        borderRadius: '20px'
     },
-  };
+};
 
-  const dateInputStyle = {
+const dateInputStyle = {
     width: '100%',
     marginBottom: '10px',
 
-  };
+};
 
 
 
 
-export default function Register({ switchToLogin }){
+export default function Register({ switchToLogin }) {
     const initialErrors = {
         username: false,
         password: false,
@@ -62,9 +62,9 @@ export default function Register({ switchToLogin }){
 
     const [formData, setFormData] = useState({
         username: '',
-        password: '', 
-        passwordVerify: '', 
-        img: '', 
+        password: '',
+        passwordVerify: '',
+        img: '',
         firstName: '',
         lastName: '',
         email: '',
@@ -87,30 +87,30 @@ export default function Register({ switchToLogin }){
         }
     });
 
-    
 
-    const cities = ['תל אביב', 'רמת גן', 'נתניה', 'נהריה', 'גבעתיים', 'רעננה', 'הרצליה', 'חולון', 'ראשון לציון', 'חיפה', 'ירושלים', 'בנימינה', 'זכרון יעקב', 'טבריה', 'רמת השרון', 'קריית שמונה', 'קריית גת'];
+
+    const cities = ['כפר יונה', 'תל אביב', 'רמת גן', 'נתניה', 'נהריה', 'גבעתיים', 'רעננה', 'הרצליה', 'חולון', 'ראשון לציון', 'חיפה', 'ירושלים', 'בנימינה', 'זכרון יעקב', 'טבריה', 'רמת השרון', 'קריית שמונה', 'קריית גת'];
 
     // for input change
-    const handleChange = (e)=>{
+    const handleChange = (e) => {
 
-        const {name, value}= e.target;
+        const { name, value } = e.target;
 
         let isValid = true;
-        
+
         switch (name) {
-            case 'username': 
-                isValid=/^[A-Za-z0-9!@#$%^&*()-+=_]{1,60}$/.test(value);
+            case 'username':
+                isValid = /^[A-Za-z0-9!@#$%^&*()-+=_]{1,60}$/.test(value);
                 break;
 
-            case 'password': 
-                isValid=/^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*()-+=])[A-Za-z0-9!@#$%^&*()-+=]{7,12}$/.test(value);
+            case 'password':
+                isValid = /^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*()-+=])[A-Za-z0-9!@#$%^&*()-+=]{7,12}$/.test(value);
                 break;
-            
+
             case 'passwordVerify':
                 isValid = value === formData.password;
                 break;
-            
+
             case 'firstName':
                 isValid = /^[A-Za-z]+$/.test(value);
                 break;
@@ -119,7 +119,7 @@ export default function Register({ switchToLogin }){
                 break;
 
             case 'email':
-                isValid=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+                isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
                 break;
 
             case 'birthDate':
@@ -134,9 +134,9 @@ export default function Register({ switchToLogin }){
             case 'houseNumber':
                 isValid = /^\d+$/.test(value) && parseInt(value) > 0;
                 break;
-            
+
             default:
-                break;   
+                break;
         }
 
         setFormData((prevFormData) => ({
@@ -147,21 +147,30 @@ export default function Register({ switchToLogin }){
                 [name]: !isValid,
             },
         }));
-        
+
 
     }
 
-    
+
 
     //for singing up - good form
     const [openSnackbar, setOpenSnackbar] = React.useState(false);
-      
+    const [openTakenUsernameSnackbar, setOpenTakenUsernameSnackbar] = React.useState(false);
+
     // for form submission
-    const handleSubmit = (e)=>{
+    const handleSubmit = (e) => {
         e.preventDefault();
-        
-        console.log("user is "+JSON.stringify(formData));
-        
+
+        const storedUsers = JSON.parse(localStorage.getItem('users')) || [];
+        const isUsernameTaken = storedUsers.some(user => user.username === formData.username);
+        if (isUsernameTaken) {
+            setOpenTakenUsernameSnackbar(true);
+            return;
+        }
+
+        console.log("user is " + JSON.stringify(formData));
+
+
         // Check if any required fields are empty
         if (
             formData.username === '' ||
@@ -175,8 +184,6 @@ export default function Register({ switchToLogin }){
             formData.streetName === '' ||
             formData.houseNumber === ''
         ) {
-            // Display an error message or handle the empty fields as needed
-            // For now, we'll just return and prevent further processing
             return;
         }
 
@@ -204,7 +211,7 @@ export default function Register({ switchToLogin }){
 
         //assuming the form is valid since im checking it during the fields
         //props.registerUser(JSON.stringify(formData));
-        
+
         // Clear the form data
         setFormData({
             username: '',
@@ -222,18 +229,26 @@ export default function Register({ switchToLogin }){
         });
         document.getElementById('myForm').reset();
 
-        
+
 
         setOpenSnackbar(true);
     };
 
     const handleCloseSnackbar = (event, reason) => {
         if (reason === 'clickaway') {
-          return;
+            return;
         }
-    
+
         setOpenSnackbar(false);
-      };
+    };
+
+    const handleCloseTakenUsernameSnackbar = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+
+        setOpenTakenUsernameSnackbar(false);
+    };
 
 
     // for file change
@@ -268,14 +283,14 @@ export default function Register({ switchToLogin }){
                 }));
             }
         }
-        
+
     };
 
     // Handle date change
     const handleDateChange = (date) => {
 
         const age = calculateAge(date);
-        
+
         // Check if age is within the desired range (18 to 120 years)
         const isValidAge = age >= 18 && age <= 120;
         if (!isValidAge) {
@@ -284,11 +299,11 @@ export default function Register({ switchToLogin }){
                 ...prevFormData,
                 errors: {
                     ...prevFormData.errors,
-                    birthDate: true, 
+                    birthDate: true,
                 },
             }));
             return;
-        }else{
+        } else {
             setFormData(prevFormData => ({
                 ...prevFormData,
                 birthDate: date,
@@ -312,13 +327,13 @@ export default function Register({ switchToLogin }){
         }
         return age;
     };
-    
+
 
     // const validForm = () =>{
     //     //checking username validation
     //     const usernameRegex = /^[A-Za-z0-9!@#$%^&*()-+=_]{1,60}$/;
     //     if (!formData.username.match(usernameRegex)) return false;
-        
+
     //     // checking passwords validation
     //     const passwordRegex = /^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*()-+=])[A-Za-z0-9!@#$%^&*()-+=]{7,12}$/;
     //     if(!formData.password.match(passwordRegex)) return false;
@@ -339,7 +354,7 @@ export default function Register({ switchToLogin }){
     //     //checking email validation
     //     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     //     if (!formData.email.match(emailRegex)) return false; 
-        
+
     //     //checking birthDate validation
     //     // const age = new Date().getFullYear()-formData.birthDate.getFullYear();
     //     // if(!(age>18&&age<=120)) return false;
@@ -355,14 +370,15 @@ export default function Register({ switchToLogin }){
     //     if(isNaN(formData.houseNumber) || formData.houseNumber <= 0) return false;
 
     //     return true;
-        
+
     // };
 
-    const handleCityChange=(e,newCity)=>{
-        setFormData(prevData=>({
-            ...prevData, ['city']:newCity}));
+    const handleCityChange = (e, newCity) => {
+        setFormData(prevData => ({
+            ...prevData, ['city']: newCity
+        }));
     }
-        
+
     //checkbox for not showing the password text
     // eslint-disable-next-line no-unused-vars
     const [showPass, setShowPass] = React.useState(false);
@@ -370,253 +386,263 @@ export default function Register({ switchToLogin }){
     const preventDefault = (event) => event.preventDefault();
 
 
-    return(
-        <div>
+    return (
+        <div >
             <h3>Register</h3>
-            <form id='myForm' onSubmit={handleSubmit} style={{maxWidth:'400px'}}>
+            <form id='myForm' onSubmit={handleSubmit} style={{ maxWidth: '400px' }}>
 
-            <div style={styles.fieldContainer}>
-            <TextField 
-                label={'Username'} 
-                id="username"
-                name="username" 
-                onChange={handleChange} 
-                required
-                autoFocus
-                error={formData.errors.username}
-                helperText={formData.errors.username && 'השתמש באותיות לועזיות, מספרים ותווים מיוחדים'}  
-                style={styles.fieldInput}             
-            />
-            
-            </div>    
-
-            <div style={{...styles.fieldContainer, display: 'flex', justifyContent: 'space-between'}}>
-                <div style={{width: '48%'}}>
-                    <TextField 
-                        label={'First Name'} 
-                        id="firstName" 
-                        name="firstName" 
-                        onChange={handleChange} 
+                <div style={styles.fieldContainer}>
+                    <TextField
+                        label={'Username'}
+                        id="username"
+                        name="username"
+                        onChange={handleChange}
                         required
-                        error={formData.errors.firstName}
-                        helperText={formData.errors.firstName&&'only strings allowed'}   
-                        style={styles.fieldInput}                  
+                        autoFocus
+                        error={formData.errors.username}
+                        helperText={formData.errors.username && 'השתמש באותיות לועזיות, מספרים ותווים מיוחדים'}
+                        style={styles.fieldInput}
                     />
+
                 </div>
 
-                <div style={{width: '48%'}}>
-                    <TextField 
-                        label={'Last Name'} 
-                        id="lastName" 
-                        name="lastName" 
-                        onChange={handleChange} 
-                        required
-                        error={formData.errors.lastName}
-                        helperText={formData.errors.lastName&&'only strings allowed'}   
-                        style={styles.fieldInput}               
-                        />
-                </div>
-                
-            </div>
-           
-            <div style={styles.fieldContainer}>
-                <Tooltip 
-                    title={formData.errors.password&&'סיסמא מכילה 7-12 תווים, אות גדולה, מספר ותו מיוחד'} 
-                    open={formData.errors.password} 
-                    arrow
-                    placement="right"
-                    enterDelay={500}
-                    leaveDelay={200}
-                    
-                >
-            <TextField 
-                label={'Password'} 
-                id="password"
-                name="password" 
-                type={showPass ? 'text' : 'password'} 
-                onChange={handleChange} 
-                required
-                autoFocus
-                error={formData.errors.password}
-                helperText={formData.errors.password&&'invalid password'}     
-                style={styles.fieldInput}              
-            />
-            </Tooltip>
-
-            
-            </div>  
-
-            <div style={styles.fieldContainer}>
-                
-                <TextField 
-                label={'Verify Password'} 
-                id="passwordVerify"
-                name="passwordVerify"  
-                type="password" 
-                onChange={handleChange} 
-                required
-                error={formData.errors.passwordVerify}
-                helperText={formData.errors.passwordVerify&&'הסיסמאות לא תואמות'} 
-                style={styles.fieldInput}                  
-                />
-            </div>
-
-
-            <div style={styles.fieldContainer}>
-                <Tooltip 
-                    title={formData.errors.email&&'email should be in english letters, special characters and @ will only appears once. the email should ends with .com'} 
-                    
-                    open={formData.errors.email} 
-                    arrow
-                    placement="right"
-                    enterDelay={500}
-                    leaveDelay={200}
-                    
-                >
-                    <TextField 
-                    label={'Email'} 
-                    id="email" 
-                    name="email" 
-                    type="email" 
-                    onChange={handleChange} 
-                    required
-                    error={formData.errors.email}
-                    helperText={formData.errors.email&&'email should be sometext@sometext.com'}
-                    style={styles.fieldInput}                 
-                    />
-                </Tooltip>
-            </div>
-
-            <div style={styles.fieldContainer}>
-                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <Box >
-                    <DemoContainer components={['DatePicker']} valueType="date">
-                    <div style={dateInputStyle}>
-                        <DatePicker label="Birth Day" 
-                        slots={{ openPickerIcon: CakeIcon }}
-                        id="birthDay" 
-                        name="birthDay"
-                        onChange={handleDateChange}
-                        slotProps={{
-                            textField:{
-                            error: formData.errors.birthDate,
-                            helperText:formData.errors.birthDate&&'Invalid birth date',
-                            },
-                        }}
-                        />
-                        
-                    </div>
-                    </DemoContainer>
-                    </Box>
-                </LocalizationProvider>
-            </div>
-
-            <div style={styles.fieldContainer}>
-                <TextField 
-                type="file" 
-                id="img" 
-                name="img" 
-                accept='.jpg, .jpeg' 
-                onChange={handleFileChange} 
-                required
-                style={styles.fieldInput}  
-                error={formData.errors.img} 
-                helperText={formData.errors.img&&'only jpeg or jpg images'} 
-                
-                />
-             
-            </div> 
-
-     
-
-            <div style={styles.fieldContainer}>
-                <Autocomplete
-                    options = {cities}
-                    getOptionLabel={(option) => (option)}
-                    onChange={handleCityChange}
-                    renderInput={(params)=>(
+                <div style={{ ...styles.fieldContainer, display: 'flex', justifyContent: 'space-between' }}>
+                    <div style={{ width: '48%' }}>
                         <TextField
-                        {...params}
-                        required
-                        label="City"
-                        name="city"
-                        autoComplete='city'
-                        style={styles.fieldInput}  
+                            label={'First Name'}
+                            id="firstName"
+                            name="firstName"
+                            onChange={handleChange}
+                            required
+                            error={formData.errors.firstName}
+                            helperText={formData.errors.firstName && 'only strings allowed'}
+                            style={styles.fieldInput}
                         />
-                    )}
-                    
-                />
-            </div>
-            
-            <div style={{...styles.fieldContainer, display: 'flex', justifyContent: 'space-between'}}>
-                <div style={{width: '48%'}}>
-                <TextField 
-                    label={'Street Name'} 
-                    id="streetName" 
-                    name="streetName" 
-                    onChange={handleChange} 
-                    required
-                    error={formData.errors.streetName}
-                    helperText={formData.errors.streetName&&'only Hebrew letters are allowed'}     
-                    style={styles.fieldInput}                   
+                    </div>
+
+                    <div style={{ width: '48%' }}>
+                        <TextField
+                            label={'Last Name'}
+                            id="lastName"
+                            name="lastName"
+                            onChange={handleChange}
+                            required
+                            error={formData.errors.lastName}
+                            helperText={formData.errors.lastName && 'only strings allowed'}
+                            style={styles.fieldInput}
+                        />
+                    </div>
+
+                </div>
+
+                <div style={styles.fieldContainer}>
+                    <Tooltip
+                        title={formData.errors.password && 'סיסמא מכילה 7-12 תווים, אות גדולה, מספר ותו מיוחד'}
+                        open={formData.errors.password}
+                        arrow
+                        placement="right"
+                        enterDelay={500}
+                        leaveDelay={200}
+
+                    >
+                        <TextField
+                            label={'Password'}
+                            id="password"
+                            name="password"
+                            type={showPass ? 'text' : 'password'}
+                            onChange={handleChange}
+                            required
+                            autoFocus
+                            error={formData.errors.password}
+                            helperText={formData.errors.password && 'invalid password'}
+                            style={styles.fieldInput}
+                        />
+                    </Tooltip>
+
+
+                </div>
+
+                <div style={styles.fieldContainer}>
+
+                    <TextField
+                        label={'Verify Password'}
+                        id="passwordVerify"
+                        name="passwordVerify"
+                        type="password"
+                        onChange={handleChange}
+                        required
+                        error={formData.errors.passwordVerify}
+                        helperText={formData.errors.passwordVerify && 'הסיסמאות לא תואמות'}
+                        style={styles.fieldInput}
                     />
                 </div>
 
-                <div style={{width: '48%'}}>
-                    <TextField 
-                    label={'House Number'} 
-                    id="houseNumber" 
-                    name="houseNumber" 
-                    type="number" 
-                    onChange={handleChange} 
-                    required
-                    error={formData.errors.houseNumber}
-                    helperText={formData.errors.houseNumber&&'only positive numbers allowed'}      
-                    style={styles.fieldInput}            
+
+                <div style={styles.fieldContainer}>
+                    <Tooltip
+                        title={formData.errors.email && 'email should be in english letters, special characters and @ will only appears once. the email should ends with .com'}
+
+                        open={formData.errors.email}
+                        arrow
+                        placement="right"
+                        enterDelay={500}
+                        leaveDelay={200}
+
+                    >
+                        <TextField
+                            label={'Email'}
+                            id="email"
+                            name="email"
+                            type="email"
+                            onChange={handleChange}
+                            required
+                            error={formData.errors.email}
+                            helperText={formData.errors.email && 'email should be sometext@sometext.com'}
+                            style={styles.fieldInput}
+                        />
+                    </Tooltip>
+                </div>
+
+                <div style={styles.fieldContainer}>
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                        <Box >
+                            <DemoContainer components={['DatePicker']} valueType="date">
+                                <div style={dateInputStyle}>
+                                    <DatePicker label="Birth Day"
+                                        slots={{ openPickerIcon: CakeIcon }}
+                                        id="birthDay"
+                                        name="birthDay"
+                                        onChange={handleDateChange}
+                                        slotProps={{
+                                            textField: {
+                                                error: formData.errors.birthDate,
+                                                helperText: formData.errors.birthDate && 'Invalid birth date',
+                                            },
+                                        }}
+                                    />
+
+                                </div>
+                            </DemoContainer>
+                        </Box>
+                    </LocalizationProvider>
+                </div>
+
+                <div style={styles.fieldContainer}>
+                    <TextField
+                        type="file"
+                        id="img"
+                        name="img"
+                        accept='.jpg, .jpeg'
+                        onChange={handleFileChange}
+                        required
+                        style={styles.fieldInput}
+                        error={formData.errors.img}
+                        helperText={formData.errors.img && 'only jpeg or jpg images'}
+
+                    />
+
+                </div>
+
+
+
+                <div style={styles.fieldContainer}>
+                    <Autocomplete
+                        options={cities}
+                        getOptionLabel={(option) => (option)}
+                        onChange={handleCityChange}
+                        renderInput={(params) => (
+                            <TextField
+                                {...params}
+                                required
+                                label="City"
+                                name="city"
+                                autoComplete='city'
+                                style={styles.fieldInput}
+                            />
+                        )}
+
                     />
                 </div>
 
-            </div>
-           
-            
-            <Box
-                sx={{
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    marginBottom: '10px',
-                    justifyContent: 'center',
-                    typography: 'body1',
-                    '& > :not(style) ~ :not(style)': {
-                      ml: 2,
-                    },
-                  }}
-                onClick={preventDefault}
-            >
-                <Link href="#" underline="hover" onClick={switchToLogin}>
-                    {'Already have an account? Click to sign in'}
-                </Link>
+                <div style={{ ...styles.fieldContainer, display: 'flex', justifyContent: 'space-between' }}>
+                    <div style={{ width: '48%' }}>
+                        <TextField
+                            label={'Street Name'}
+                            id="streetName"
+                            name="streetName"
+                            onChange={handleChange}
+                            required
+                            error={formData.errors.streetName}
+                            helperText={formData.errors.streetName && 'only Hebrew letters are allowed'}
+                            style={styles.fieldInput}
+                        />
+                    </div>
 
-                
-            </Box>
-            
-               
-            <Button type='submit' variant="contained" endIcon={<TaskAlt />}>
-                Send
-            </Button>
-            <Snackbar open={openSnackbar} autoHideDuration={6000} onClose={handleCloseSnackbar} anchorOrigin={{vertical:'top', horizontal:'center'}}>
-                <Alert
-                onClose={handleCloseSnackbar}
-                severity="success"
-                variant="filled"
-                sx={{ width: '100%' }}
+                    <div style={{ width: '48%' }}>
+                        <TextField
+                            label={'House Number'}
+                            id="houseNumber"
+                            name="houseNumber"
+                            type="number"
+                            onChange={handleChange}
+                            required
+                            error={formData.errors.houseNumber}
+                            helperText={formData.errors.houseNumber && 'only positive numbers allowed'}
+                            style={styles.fieldInput}
+                        />
+                    </div>
+
+                </div>
+
+
+                <Box
+                    sx={{
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        marginBottom: '10px',
+                        justifyContent: 'center',
+                        typography: 'body1',
+                        '& > :not(style) ~ :not(style)': {
+                            ml: 2,
+                        },
+                    }}
+                    onClick={preventDefault}
                 >
-                Account Created, Thank You
-                </Alert>
-            </Snackbar>
+                    <Link href="#" underline="hover" onClick={switchToLogin}>
+                        {'Already have an account? Click to sign in'}
+                    </Link>
+
+
+                </Box>
+
+
+                <Button type='submit' variant="contained" endIcon={<TaskAlt />}>
+                    Send
+                </Button>
+                <Snackbar open={openSnackbar} autoHideDuration={6000} onClose={handleCloseSnackbar} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
+                    <Alert
+                        onClose={handleCloseSnackbar}
+                        severity="success"
+                        sx={{ width: '100%' }}
+                    >
+                        Account Created, Thank You
+                    </Alert>
+                </Snackbar>
+
+                <Snackbar open={openTakenUsernameSnackbar} autoHideDuration={6000} onClose={handleCloseTakenUsernameSnackbar} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
+                    <Alert
+                        onClose={handleCloseTakenUsernameSnackbar}
+                        severity="info"
+
+                        sx={{ width: '100%' }}
+                    >
+                        Username is already exsit
+                    </Alert>
+                </Snackbar>
             </form>
         </div>
     );
 
 
-        
+
 }

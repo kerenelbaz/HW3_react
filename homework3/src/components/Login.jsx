@@ -1,5 +1,6 @@
 
 import { useState } from 'react';
+import PropTypes from 'prop-types';
 
 import Button from '@mui/material/Button';
 import TaskAlt from '@mui/icons-material/TaskAlt';
@@ -8,10 +9,15 @@ import TextField from '@mui/material/TextField';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 
+
+
+
 const styles = {
     fieldContainer: {
       marginBottom: '10px',
-      borderRadius: '20px'
+      borderRadius: '20px',
+      justifyContent: 'center',
+      alignItems: 'center'
       
     },
     fieldInput: {
@@ -20,9 +26,14 @@ const styles = {
       borderRadius: '20px'
     },
   };
-
-export default function Login() {
+//setIsLoggedIn and onLogin passed from the father
+export default function Login({ setIsLoggedIn, onLogin }) {
   
+    Login.propTypes = {
+        setIsLoggedIn: PropTypes.func.isRequired,
+        onLogin: PropTypes.func.isRequired,
+    };
+
     const [formData, setFormData] = useState({
         username: '',
         password: ''
@@ -53,8 +64,10 @@ export default function Login() {
             const foundUser = storedUsers.find(user => user.username === username && user.password === password);
 
             if (foundUser) {
-                localStorage.setItem('userLogged', JSON.stringify(foundUser));
+                //localStorage.setItem('userLogged', JSON.stringify(foundUser));
                 console.log('Login successful:', foundUser);
+                onLogin(foundUser); // Pass the logged-in user data to the parent component
+                setIsLoggedIn(true); // Set isLoggedIn to true
               
             } else {
                 console.log('Incorrect username or password');
