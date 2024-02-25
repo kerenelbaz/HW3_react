@@ -1,4 +1,5 @@
 import { useState } from 'react';
+
 import PropTypes from 'prop-types';
 import Avatar from '@mui/joy/Avatar';
 import Card from '@mui/joy/Card';
@@ -32,37 +33,37 @@ export default function Profile({ user, onLogout, onEdit }) {
 
     const birthDate = dayjs(user.birthDate);
     const day = birthDate.format('DD');
-    const month = birthDate.locale('he').format('MMMM'); 
+    const month = birthDate.locale('he').format('MMMM');
     const year = birthDate.format('YYYY');
 
     return (
-        <Card sx={{ width: 520, maxWidth: '100%', boxShadow: 'lg' }}>
-            <CardContent sx={{ alignItems: 'center', textAlign: 'center' }}>
-                <Avatar src={`/static/images/avatar/${user.img}`} sx={{ '--Avatar-size': '6rem' ,marginBottom:'-3%'}} />
+        <Card sx={{ height: 400, width: 520, maxWidth: '100%', boxShadow: 'lg' }}>
+            <CardContent sx={{ height: '100%', width: '100%', alignItems: 'center', textAlign: 'center' }}>
+                <Avatar src={`${user.img}`} sx={{ '--Avatar-size': '6rem', marginBottom: '-3%' }} />
                 <br />
                 <Typography level="title-lg" sx={{ fontSize: '23px' }}>{user.username}</Typography>
-                <Typography level="body-sm" sx={{ maxWidth: '100%' }}>
+                <Typography level="body-sm" sx={{ width: '80%' }}>
 
                     <Typography sx={{ fontSize: '20px' }}>
                         <span style={{ paddingRight: '20%', marginTop: '2%' }}>
                             {user.email}
-                        </span>
-                        <EmailIcon sx={{ marginTop: '-12%' , display:'flex', marginLeft:'auto'}} />
+
+                            <EmailIcon sx={{ marginTop: '-6%', display: 'flex', marginLeft: '90%' }} /> </span>
                     </Typography><br />
 
                     <Typography sx={{ fontSize: '20px' }}>
                         <span style={{ paddingRight: '10%', marginTop: '2%' }}>
                             {user.streetName} {user.houseNumber}, {user.city}
                         </span>
-                        <HomeIcon sx={{ marginTop: '-12%' , display:'flex', marginLeft:'auto'}} />
+                        <HomeIcon sx={{ marginTop: '-6%', display: 'flex', marginLeft: '90%' }} />
                     </Typography><br />
 
                     <Typography sx={{ fontSize: '20px' }}>
-                    <span style={{ paddingRight: '10%', marginTop: '2%' }}>
+                        <span style={{ paddingRight: '10%', marginTop: '2%' }}>
                             {year}, {month} {day}
                         </span>
-                        <CakeIcon sx={{ marginTop: '-12%' , display:'flex', marginLeft:'auto'}} />
-                        
+                        <CakeIcon sx={{ marginTop: '-6%', display: 'flex', marginLeft: '90%' }} />
+
                     </Typography><br />
 
                 </Typography>

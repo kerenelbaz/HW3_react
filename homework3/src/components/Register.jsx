@@ -253,13 +253,13 @@ export default function Register({ switchToLogin }) {
 
     // for file change
     const handleFileChange = (e) => {
-        const file = e.target.files[0].name;
-
+        const file = e.target.files[0];
+    
         if (file) {
             // Check if the file extension is .jpg or .jpeg
             const validExtensions = ['jpg', 'jpeg'];
-            const fileExtension = file.split('.').pop().toLowerCase();
-
+            const fileExtension = file.name.split('.').pop().toLowerCase();
+    
             if (!validExtensions.includes(fileExtension)) {
                 // Set img error to true
                 setFormData(prevFormData => ({
@@ -271,19 +271,23 @@ export default function Register({ switchToLogin }) {
                     }
                 }));
             } else {
-                // Clear img error and set selected file
-                setFormData(prevFormData => ({
-                    ...prevFormData,
-                    img: file,
-
-                    errors: {
-                        ...prevFormData.errors,
-                        img: false
-                    }
-                }));
+                const reader = new FileReader();
+    
+                reader.onload = () => {
+                    // Clear img error and set selected file
+                    setFormData(prevFormData => ({
+                        ...prevFormData,
+                        img: reader.result,
+                        errors: {
+                            ...prevFormData.errors,
+                            img: false
+                        }
+                    }));
+                };
+    
+                reader.readAsDataURL(file);
             }
         }
-
     };
 
     // Handle date change

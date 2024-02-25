@@ -18,18 +18,19 @@ import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 const cities = ['כפר יונה', 'תל אביב', 'רמת גן', 'נתניה', 'נהריה', 'גבעתיים', 'רעננה', 'הרצליה', 'חולון', 'ראשון לציון', 'חיפה', 'ירושלים', 'בנימינה', 'זכרון יעקב', 'טבריה', 'רמת השרון', 'קריית שמונה', 'קריית גת'];
 
 const EditDetails = ({ user, onSave, onCancel, setIsEditingProfile }) => {
-    const [userData, setUserData] = useState(() => {
-        const storedUserData = JSON.parse(localStorage.getItem('userLogged'));
-        // Check if user data exists in local storage
-        if (storedUserData) {
-          // If user data exists, add the 'passwordVerify' attribute
-          storedUserData.passwordVerify = storedUserData.password;
-          return storedUserData;
-        } else {
-          // If user data doesn't exist, return an empty object
-          return {};
-        }
-      });
+  const [userData, setUserData] = useState(() => {
+    const storedUserData = JSON.parse(localStorage.getItem('userLogged'));
+    // Check if user data exists in local storage
+    if (storedUserData) {
+      // If user data exists, add the 'passwordVerify' attribute
+      storedUserData.passwordVerify = storedUserData.password;
+      return storedUserData;
+    } else {
+      // If user data doesn't exist, return an empty object
+      return {};
+    }
+  });
+  // eslint-disable-next-line no-unused-vars
   const [editing, setEditing] = useState(false);
 
   const [openSnackbarSave, setOpenSnackbarSave] = React.useState(false);
@@ -43,9 +44,9 @@ const EditDetails = ({ user, onSave, onCancel, setIsEditingProfile }) => {
     }
 
     setOpenTakenUsernameSnackbar(false);
-};
+  };
 
-const handleCloseSnackbarError = (event, reason) => {
+  const handleCloseSnackbarError = (event, reason) => {
     if (reason === 'clickaway') {
       return;
     }
@@ -62,10 +63,10 @@ const handleCloseSnackbarError = (event, reason) => {
 
   const handleSaveChanges = () => {
     // Save the changes made in the form
-    // Update user data in localStorage or send it to the server
-    // For demonstration, let's just update the state
+    // Update user data in localStorage
     localStorage.setItem('userLogged', JSON.stringify(userData));
     setEditing(false);
+
   };
 
   const handleChange = (e) => {
@@ -112,28 +113,31 @@ const handleCloseSnackbarError = (event, reason) => {
   };
 
   const handleFileChange = (e) => {
-    const file = e.target.files[0].name;
+    const file = e.target.files[0];
+    const fileName = file.name;
+    console.log('file name is' + fileName)
+    console.log('File ', file)
 
     if (file) {
       // Check if the file extension is .jpg or .jpeg
       const validExtensions = ['jpg', 'jpeg'];
-      const fileExtension = file.split('.').pop().toLowerCase();
+      const fileExtension = fileName.split('.').pop().toLowerCase();
 
       if (!validExtensions.includes(fileExtension)) {
-        // Set img error to true
         setUserData(prevFormData => ({
           ...prevFormData,
           img: '',
-
         }));
       } else {
-        // Clear img error and set selected file
-        setUserData(prevFormData => ({
-          ...prevFormData,
-          img: file,
+        const reader = new FileReader();
 
-
-        }));
+        reader.onload = () => {
+          setUserData(prevFormData => ({
+            ...prevFormData,
+            img: reader.result,
+          }));
+        };
+        reader.readAsDataURL(file);
       }
     }
 
@@ -146,13 +150,13 @@ const handleCloseSnackbarError = (event, reason) => {
 
   const validPassword = (password) => {
     const passwordRegex = /^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*()-+=])[A-Za-z0-9!@#$%^&*()-+=]{7,12}$/;
-    console.log('password in checkking verify is ',password.toString())
+    console.log('password in checkking verify is ', password.toString())
     return passwordRegex.test(password);
   }
 
   const validVerifyPassword = (userData) => {
-    console.log('verify is ',userData.passwordVerify)
-    console.log('user data is ',userData)
+    console.log('verify is ', userData.passwordVerify)
+    console.log('user data is ', userData)
     return userData.password === userData.passwordVerify;
   }
 
@@ -162,6 +166,7 @@ const handleCloseSnackbarError = (event, reason) => {
     //return houseNumberRegex.test(houseNumber) && parseInt(houseNumber);
   }
 
+  // eslint-disable-next-line no-unused-vars
   const handleEditAccount = () => {
     setEditing(true);
   };
@@ -170,7 +175,7 @@ const handleCloseSnackbarError = (event, reason) => {
     onCancel();
     setIsEditingProfile(false); // Call setIsEditingProfile to update the state
   };
-  
+
 
 
   const validBD = (dateOfBirth) => {
@@ -218,8 +223,6 @@ const handleCloseSnackbarError = (event, reason) => {
     }
 
     if (isValidUsername && isValidPassword && isValidVerifyPass && isValidFirstname && isValidLastname && isValidStreet && isValidHoseNumber && isValidBDate) {
-        
-      console.log('Form is valid, changed details');
 
       const users = JSON.parse(localStorage.getItem('users'));
       const userLoggedin = JSON.parse(localStorage.getItem('userLogged')).username;
@@ -229,45 +232,41 @@ const handleCloseSnackbarError = (event, reason) => {
       const storedUsers = JSON.parse(localStorage.getItem('users')) || [];
       const isUsernameTaken = storedUsers.some(user => user.username === userData.username);
 
-      //const userToUpdateIndex = users.findIndex(user => user.username === usernameToUpdate);
+      // Check if the new username is different from the original one and if it's already taken
+      const isUsernameTakenByAnotherUser = isUsernameTaken && users[userToUpdateIndex].username !== userData.username;
+      const isUsernameTakenByCurrentUser = isUsernameTaken && users[userToUpdateIndex].username === userData.username;
 
-      if (isUsernameTaken && users[userToUpdateIndex].username === userData.username || !isUsernameTaken && users[userToUpdateIndex].username === userData.username) {
+      if (isUsernameTakenByAnotherUser) {
+        setOpenTakenUsernameSnackbar(true);
+        return;
+      }
 
-        //change the user from the local storage
-
-        // Step 1: Retrieve the array of users from local storage
-        //const users = JSON.parse(localStorage.getItem('users'));
-        //const userLoggedin = JSON.parse(localStorage.getItem('userLogged')).username;
-        
-        // Step 2: Find the specific user whose details you want to change
-        //const usernameToUpdate = userLoggedin;
-        //const userToUpdateIndex = users.findIndex(user => user.username === usernameToUpdate);
-        // Step 3: Update the details of that user
+      // Check if the new username is different from the original one and if it's not taken
+      if (isUsernameTakenByCurrentUser || !isUsernameTaken) {
+        //update user data in users array
         users[userToUpdateIndex].username = userData.username;
-          users[userToUpdateIndex].password = userData.password;
-          users[userToUpdateIndex].firstName = userData.firstName;
-          users[userToUpdateIndex].lastName = userData.lastName;
-          users[userToUpdateIndex].city = userData.city;
-          users[userToUpdateIndex].houseNumber = userData.houseNumber;
-          users[userToUpdateIndex].streetName = userData.streetName;
-          users[userToUpdateIndex].img = userData.img;
-          users[userToUpdateIndex].birthDate = userData.birthDate;
-          console.log("The user updated is: " + users[userToUpdateIndex])
-          const userUpdated = users[userToUpdateIndex]
+        users[userToUpdateIndex].password = userData.password;
+        users[userToUpdateIndex].firstName = userData.firstName;
+        users[userToUpdateIndex].lastName = userData.lastName;
+        users[userToUpdateIndex].city = userData.city;
+        users[userToUpdateIndex].houseNumber = userData.houseNumber;
+        users[userToUpdateIndex].streetName = userData.streetName;
+        users[userToUpdateIndex].img = userData.img;
+        users[userToUpdateIndex].birthDate = userData.birthDate;
+        console.log("The user updated is: " + users[userToUpdateIndex])
+        const userUpdated = users[userToUpdateIndex]
 
-          // Step 4: Save the updated array of users back to local storage
-          localStorage.setItem('users', JSON.stringify(users));
-          setOpenSnackbarSave(true);
+        localStorage.setItem('users', JSON.stringify(users));
+        setOpenSnackbarSave(true);
 
-          localStorage.setItem('userLogged', JSON.stringify(userUpdated));
+        localStorage.setItem('userLogged', JSON.stringify(userUpdated));
 
-          setTimeout(() => {
-            setEditing(false);
-            setIsEditingProfile(false);
-            setUserData(userUpdated);
-          }, 7000);
-        
-        
+        setTimeout(() => {
+          setEditing(false);
+          setIsEditingProfile(false);
+          setUserData(userUpdated);
+        }, 3000);
+        window.location.reload()
       } else {
         console.log('Username is already used by another user');
         setOpenTakenUsernameSnackbar(true);
@@ -307,180 +306,180 @@ const handleCloseSnackbarError = (event, reason) => {
   return (
     <Card sx={{ width: 420, maxWidth: '100%', boxShadow: 'lg' }}>
       <CardContent>
-            <form id='myForm' onSubmit={handleSubmit}>
+        <form id='myForm' onSubmit={handleSubmit}>
 
 
-              <TextField
-                label="Username"
-                name="username"
-                onChange={handleChange}
-                fullWidth
-                margin="normal"
-                value={userData.username}
-              />
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <TextField
-                  label="First Name"
-                  name="firstName"
-                  onChange={handleChange}
-                  fullWidth
-                  margin="normal"
-                  value={userData.firstName}
-                />
+          <TextField
+            label="Username"
+            name="username"
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            value={userData.username}
+          />
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <TextField
+              label="First Name"
+              name="firstName"
+              onChange={handleChange}
+              fullWidth
+              margin="normal"
+              value={userData.firstName}
+            />
 
-                <TextField
-                  label="Last Name"
-                  name="lastName"
-                  onChange={handleChange}
-                  fullWidth
-                  margin="normal"
-                  value={userData.lastName}
-                />
-              </div>
+            <TextField
+              label="Last Name"
+              name="lastName"
+              onChange={handleChange}
+              fullWidth
+              margin="normal"
+              value={userData.lastName}
+            />
+          </div>
 
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <TextField
-                  label={'Password'}
-                  id="password"
-                  name="password"
-                  // type={'password'}
-                  onChange={handleChange}
-                  required
-                  autoFocus
-                  margin="normal"
-                  style={{ width: '49%' }}
-                  value={userData.password}
-                />
-                <TextField
-                  label={'Verify Password'}
-                  id="passwordVerify"
-                  name="passwordVerify"
-                  // type="password"
-                  onChange={handleChange}
-                  required
-                  margin='normal'
-                  style={{ width: '49%' }}
-                  value={userData.passwordVerify}
-                />
-              </div>
-
-
-              <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <Box style={{ margin: 'noraml' }}>
-                  <DemoContainer components={['DatePicker']} valueType="date" margin='noraml'>
-                    <div style={{ margin: 'noraml' }}>
-                      <DatePicker label="Birth Day"
-                        slots={{ openPickerIcon: CakeIcon }}
-                        id="birthDay"
-                        name="birthDay"
-                        onChange={handleDateChange}
-                        margin="normal"
-                        value={dayjs(userData.birthDate) }
-                      />
-
-                    </div>
-                  </DemoContainer>
-                </Box>
-              </LocalizationProvider>
-
-              <input
-                type="file"
-                id="img"
-                name="img"
-                accept='.jpg, .jpeg'
-                onChange={handleFileChange}
-                required
-                
-                style={{ paddingTop: '20px', paddingBottom: '10px', fontSize: '16px' }}
-              />
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <TextField
+              label={'Password'}
+              id="password"
+              name="password"
+              type={'password'}
+              onChange={handleChange}
+              required
+              autoFocus
+              margin="normal"
+              style={{ width: '49%' }}
+              value={userData.password}
+            />
+            <TextField
+              label={'Verify Password'}
+              id="passwordVerify"
+              name="passwordVerify"
+              type="password"
+              onChange={handleChange}
+              required
+              margin='normal'
+              style={{ width: '49%' }}
+              value={userData.passwordVerify}
+            />
+          </div>
 
 
-              <Autocomplete
-                options={cities}
-                getOptionLabel={(option) => (option)}
-                value={userData.city}
-                onChange={handleCityChange}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    required
-                    label="City"
-                    name="city"
-                    autoComplete='city'
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <Box style={{ margin: 'noraml' }}>
+              <DemoContainer components={['DatePicker']} valueType="date" margin='noraml'>
+                <div style={{ margin: 'noraml' }}>
+                  <DatePicker label="Birth Day"
+                    slots={{ openPickerIcon: CakeIcon }}
+                    id="birthDay"
+                    name="birthDay"
+                    onChange={handleDateChange}
                     margin="normal"
-                    
+                    value={dayjs(userData.birthDate)}
                   />
-                )}
+
+                </div>
+              </DemoContainer>
+            </Box>
+          </LocalizationProvider>
+
+          <input
+            type="file"
+            id="img"
+            name="img"
+            accept=".jpg, .jpeg"
+            onChange={handleFileChange}
+            required
+
+            style={{ paddingTop: '20px', paddingBottom: '10px', fontSize: '16px' }}
+          />
+
+
+          <Autocomplete
+            options={cities}
+            getOptionLabel={(option) => (option)}
+            value={userData.city}
+            onChange={handleCityChange}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                required
+                label="City"
+                name="city"
+                autoComplete='city'
+                margin="normal"
 
               />
+            )}
 
-              <div style={{ display: 'flex', gap: '10px' }}>
+          />
 
-
-                <TextField
-                  label={'Street Name'}
-                  id="streetName"
-                  name="streetName"
-                  onChange={handleChange}
-                  value={userData.streetName}
-                  required
-                  margin='normal'
-                />
-
-                <TextField
-                  label={'House Number'}
-                  id="houseNumber"
-                  name="houseNumber"
-                  type="number"
-                  value={userData.houseNumber}
-                  onChange={handleChange}
-                  required
-                  margin='normal'
-                />
-              </div>
-
-              <div style={{ display: 'flex', gap: '114px' }}>
-                <Button type='submit'>Save Changes</Button>
-                <Button onClick={handleCancel}>Cancel</Button>
-              </div>
-
-              <Snackbar open={openSnackbarSave} autoHideDuration={6000} onClose={handleCloseSnackbarSave} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
-                <Alert
-                  onClose={handleCloseSnackbarSave}
-                  severity="success"
-                  sx={{ width: '100%' }}
-                >
-                  User Details Saved, Thank You!
-                </Alert>
-              </Snackbar>
+          <div style={{ display: 'flex', gap: '10px' }}>
 
 
-              <Snackbar open={openSnackbarErros} autoHideDuration={6000} onClose={handleCloseSnackbarError} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
-                <Alert
-                  onClose={handleCloseSnackbarError}
-                  severity="error"
-                  sx={{ width: '100%' }}
-                >
-                  Invlid form, please try again
-                </Alert>
-              </Snackbar>
+            <TextField
+              label={'Street Name'}
+              id="streetName"
+              name="streetName"
+              onChange={handleChange}
+              value={userData.streetName}
+              required
+              margin='normal'
+            />
+
+            <TextField
+              label={'House Number'}
+              id="houseNumber"
+              name="houseNumber"
+              type="number"
+              value={userData.houseNumber}
+              onChange={handleChange}
+              required
+              margin='normal'
+            />
+          </div>
+
+          <div style={{ display: 'flex', gap: '114px' }}>
+            <Button type='submit' onClick={handleSaveChanges}>Save Changes</Button>
+            <Button onClick={handleCancel}>Cancel</Button>
+          </div>
+
+          <Snackbar open={openSnackbarSave} autoHideDuration={6000} onClose={handleCloseSnackbarSave} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
+            <Alert
+              onClose={handleCloseSnackbarSave}
+              severity="success"
+              sx={{ width: '100%' }}
+            >
+              User Details Saved, Thank You!
+            </Alert>
+          </Snackbar>
+
+
+          <Snackbar open={openSnackbarErros} autoHideDuration={6000} onClose={handleCloseSnackbarError} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
+            <Alert
+              onClose={handleCloseSnackbarError}
+              severity="error"
+              sx={{ width: '100%' }}
+            >
+              Invlid form, please try again
+            </Alert>
+          </Snackbar>
 
 
 
-              <Snackbar open={openTakenUsernameSnackbar} autoHideDuration={6000} onClose={handleCloseTakenUsernameSnackbar} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
-                <Alert
-                  onClose={handleCloseTakenUsernameSnackbar}
-                  severity="info"
+          <Snackbar open={openTakenUsernameSnackbar} autoHideDuration={6000} onClose={handleCloseTakenUsernameSnackbar} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
+            <Alert
+              onClose={handleCloseTakenUsernameSnackbar}
+              severity="info"
 
-                  sx={{ width: '100%' }}
-                >
-                  Username is already exsit
-                </Alert>
-              </Snackbar>
+              sx={{ width: '100%' }}
+            >
+              Username is already exsit
+            </Alert>
+          </Snackbar>
 
-            </form>
+        </form>
 
-          </CardContent>
+      </CardContent>
     </Card>
   );
 };

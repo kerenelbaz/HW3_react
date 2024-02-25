@@ -6,24 +6,25 @@ import Profile_new from './components/Profile_new';
 import SystemAdmin from './components/SystemAdmin';
 
 function App() {
-  const [users, setUsers] = useState([]);
+  // State variables to manage user data, authentication status, and editing profile status
+  //const [users, setUsers] = useState([]); // state variable to manage user data
   const [showRegister, setShowRegister] = useState(true);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userLogged, setUserLogged] = useState(JSON.parse(localStorage.getItem('userLogged')));
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // flag state variable to know if there is user that logged in or not
+  const [userLogged, setUserLogged] = useState(JSON.parse(localStorage.getItem('userLogged'))); //state variable to get the user who is logged in
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 
   // eslint-disable-next-line no-unused-vars
-  const handleSignInClick = () => {
-    setShowRegister(false);
-  };
+  // const handleSignInClick = () => {
+  //   setShowRegister(false);
+  // };
 
   // eslint-disable-next-line no-unused-vars
-  function registerUser(user) {
-    const updatedUsers = [...users, user];
-    setUsers(updatedUsers);
-    localStorage.setItem('users', JSON.stringify(users));
-  }
+  // function registerUser(user) {
+  //   const updatedUsers = [...users, user];
+  //   setUsers(updatedUsers);
+  //   localStorage.setItem('users', JSON.stringify(users));
+  // }
 
   // useEffect(() => {
   //   const userLogged = localStorage.getItem('userLogged');
