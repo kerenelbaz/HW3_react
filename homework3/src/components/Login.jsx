@@ -1,48 +1,39 @@
-
 import { useState } from 'react';
 import PropTypes from 'prop-types';
-
 import Button from '@mui/material/Button';
 import TaskAlt from '@mui/icons-material/TaskAlt';
 import TextField from '@mui/material/TextField';
-
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 
-
-
-
 const styles = {
     fieldContainer: {
-      marginBottom: '10px',
-      borderRadius: '20px',
-      justifyContent: 'center',
-      alignItems: 'center'
-      
+        marginBottom: '10px',
+        borderRadius: '20px',
+        justifyContent: 'center',
+        alignItems: 'center'
+
     },
     fieldInput: {
-      width: '100%',
-      marginBottom: '10px',
-      borderRadius: '20px'
+        width: '100%',
+        marginBottom: '10px',
+        borderRadius: '20px'
     },
-  };
-//setIsLoggedIn and onLogin passed from the father
+};
+// setIsLoggedIn and onLogin passed from the father
 export default function Login({ setIsLoggedIn, onLogin }) {
-  
+
     Login.propTypes = {
         setIsLoggedIn: PropTypes.func.isRequired,
         onLogin: PropTypes.func.isRequired,
     };
 
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState({ //useState hook
         username: '',
         password: ''
     });
-    const [loginFailed, setLoginFailed] = useState(false);
+    const [loginFailed, setLoginFailed] = useState(false); //useState hook
 
-    // eslint-disable-next-line no-unused-vars
-    const [showPass, setShowPass] = useState(false);
-    
     const handleChange = (e) => {
 
         const { name, value } = e.target;
@@ -51,70 +42,66 @@ export default function Login({ setIsLoggedIn, onLogin }) {
             [name]: value
         }));
     }
-    
 
+    // function loginUser - retrieve the username and password from the form data state
     const handleSubmit = (e) => {
+        e.preventDefault(); // prevent default form submission
+        const { username, password } = formData;
 
-        e.preventDefault();
-        const {username, password} = formData;
+        const storedUsers = JSON.parse(localStorage.getItem('users')) || []; //retrieves the stored users from the local storage.
 
-        const storedUsers = JSON.parse(localStorage.getItem('users'))||[];
-
-        if(storedUsers.length>0){
+        if (storedUsers.length > 0) {//checks if there are users in the local storage
+            //search for a user with a matching username and password
             const foundUser = storedUsers.find(user => user.username === username && user.password === password);
 
             if (foundUser) {
-                //localStorage.setItem('userLogged', JSON.stringify(foundUser));
-                console.log('Login successful:', foundUser);
-                onLogin(foundUser); // Pass the logged-in user data to the parent component
-                setIsLoggedIn(true); // Set isLoggedIn to true
-              
-            } else {
-                console.log('Incorrect username or password');
-                setLoginFailed(true);
+                onLogin(foundUser); // Pass the logged-in user data to the parent component by calling the onLogin function provided as a prop
+                setIsLoggedIn(true);
+
+            } else { //no user was found match to the username of password
+                setLoginFailed(true); // prompt the alert for login faild
             }
-        } else {
-            // No users stored in the local storage
+        } else {// no users stored in the local storage
             console.log('No users registered');
-            setLoginFailed(true);
+            setLoginFailed(true); // prompt the alert for login faild
         }
 
     }
 
 
-    return (
-      <div><h2>Sign In</h2>
-        <form onSubmit={handleSubmit}>
-        <div style={styles.fieldContainer}>
-            <TextField 
-                label={'Username'} 
-                id="username"
-                name="username" 
-                onChange={handleChange} 
-                required
-                autoFocus
-                style={styles.fieldInput}             
-            />
-            
-            </div>  
+    return ( //renders a form with input fields for the username and password.
+        <div><h2>Sign In</h2>
+            <form onSubmit={handleSubmit}>
+                <div style={styles.fieldContainer}>
+                    <TextField
+                        label={'Username'}
+                        id="username"
+                        name="username"
+                        onChange={handleChange}
+                        required
+                        autoFocus
+                        style={styles.fieldInput}
+                    />
 
-            <div style={styles.fieldContainer}>
-            <TextField 
-                label={'Password'} 
-                id="password"
-                name="password" 
-                type={showPass ? 'text' : 'password'} 
-                onChange={handleChange} 
-                required
-                autoFocus
-                style={styles.fieldInput}              
-            />
+                </div>
 
-            <Button type='submit' variant="contained" endIcon={<TaskAlt />}>
-                Send
-            </Button>
-            </div>  
-        </form>
+                <div style={styles.fieldContainer}>
+                    <TextField
+                        label={'Password'}
+                        id="password"
+                        name="password"
+                        type='password'
+                        onChange={handleChange}
+                        required
+                        autoFocus
+                        style={styles.fieldInput}
+                    />
+
+                    <Button type='submit' variant="contained" endIcon={<TaskAlt />}>
+                        Send
+                    </Button>
+                </div>
+            </form>
             {loginFailed && (
                 <Alert severity="error">
                     <AlertTitle>Error</AlertTitle>
@@ -122,7 +109,7 @@ export default function Login({ setIsLoggedIn, onLogin }) {
                 </Alert>
             )}
 
-      </div>
+        </div>
     )
-  }
+}
 

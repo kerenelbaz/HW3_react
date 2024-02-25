@@ -10,10 +10,13 @@ import Paper from '@mui/material/Paper';
 import Button from '@mui/material/Button';
 import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
+import EditButton from '@mui/icons-material/Edit';
 import dayjs from 'dayjs'
 
 export default function SystemAdmin(props) {
     const [users, setUsers] = useState([]);
+    const [editDialogOpen, setEditDialogOpen] = useState(false);
+    const [selectedUser, setSelectedUser] = useState(null);
 
     useEffect(() => {
         // gets the users from the local storage
@@ -31,16 +34,36 @@ export default function SystemAdmin(props) {
             return;
         }
         //filter out the user with the username that passed to the function who matches the user in the iteration
-        setUsers(prevUsers => prevUsers.filter(user => user.username !== username));
+        const updatedUsers = users.filter(user => user.username !== username);
+        // Update the users in local storage
+        localStorage.setItem('users', JSON.stringify(updatedUsers));
+        // Update the state to reflect the deletion
+        setUsers(updatedUsers);
+
     };
 
     // function for editing the user details
     const handleEditRow = (username, field, value) => {
-        setUsers(prevUsers =>
-            // change the user details with the new values
-            prevUsers.map(user => (user.username === username ? { ...user, [field]: value } : user))
-        );
+        // Update the user details with the new values
+        const updatedUsers = users.map(user => (user.username === username ? { ...user, [field]: value } : user));
+        // Update the users in local storage
+        localStorage.setItem('users', JSON.stringify(updatedUsers));
+        // Update the state to reflect the changes
+        setUsers(updatedUsers);
 
+    };
+
+    // Function to handle opening the edit dialog
+    const handleEditButtonClick = (user) => {
+        setSelectedUser(user);
+        setEditDialogOpen(true);
+    };
+
+    // Function to handle saving edited user details
+    const handleSaveEdit = (editedUser) => {
+        const updatedUsers = users.map(user => (user.username === editedUser.username ? editedUser : user));
+        localStorage.setItem('users', JSON.stringify(updatedUsers));
+        setUsers(updatedUsers);
     };
 
     return (
@@ -80,7 +103,8 @@ export default function SystemAdmin(props) {
                                     <span
                                         contentEditable={user.username !== 'admin'}
                                         suppressContentEditableWarning
-                                        onBlur={(e) => {handleEditRow(user.username, 'fullname', e.target.innerText);
+                                        onBlur={(e) => {
+                                            handleEditRow(user.username, 'fullname', e.target.innerText);
                                         }}
                                     >
                                         {user.firstName} {user.lastName}
@@ -117,6 +141,9 @@ export default function SystemAdmin(props) {
                                 <TableCell align="right">
                                     <IconButton aria-label="delete" onClick={() => handleDeleteRow(user.username)}>
                                         <DeleteIcon />
+                                    </IconButton>
+                                    <IconButton aria-label="edit" onClick={() => handleEditButtonClick(user)}>
+                                        <EditButton />
                                     </IconButton>
                                 </TableCell>
 

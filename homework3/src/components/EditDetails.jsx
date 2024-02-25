@@ -18,7 +18,9 @@ import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 const cities = ['כפר יונה', 'תל אביב', 'רמת גן', 'נתניה', 'נהריה', 'גבעתיים', 'רעננה', 'הרצליה', 'חולון', 'ראשון לציון', 'חיפה', 'ירושלים', 'בנימינה', 'זכרון יעקב', 'טבריה', 'רמת השרון', 'קריית שמונה', 'קריית גת'];
 
 const EditDetails = ({ user, onSave, onCancel, setIsEditingProfile }) => {
-  const [userData, setUserData] = useState(() => {
+
+  const [userData, setUserData] = useState(() => //useState hook for hold the user data who is being edited
+  {
     const storedUserData = JSON.parse(localStorage.getItem('userLogged'));
     // Check if user data exists in local storage
     if (storedUserData) {
@@ -31,13 +33,14 @@ const EditDetails = ({ user, onSave, onCancel, setIsEditingProfile }) => {
     }
   });
   // eslint-disable-next-line no-unused-vars
-  const [editing, setEditing] = useState(false);
+  const [editing, setEditing] = useState(false); //useState hook to track whether the user is currently in edit mode
 
+  // snackbar state to control the visibility of snackbar alerts:
   const [openSnackbarSave, setOpenSnackbarSave] = React.useState(false);
   const [openSnackbarErros, setOpenSnackbarErros] = React.useState(false);
   const [openTakenUsernameSnackbar, setOpenTakenUsernameSnackbar] = React.useState(false);
 
-
+  //responsible for handling the closing of the snackbar alert about edit unavailable username
   const handleCloseTakenUsernameSnackbar = (event, reason) => {
     if (reason === 'clickaway') {
       return;
@@ -46,6 +49,7 @@ const EditDetails = ({ user, onSave, onCancel, setIsEditingProfile }) => {
     setOpenTakenUsernameSnackbar(false);
   };
 
+  // responsible for handling the closing of the snackbar alert about errors in editting
   const handleCloseSnackbarError = (event, reason) => {
     if (reason === 'clickaway') {
       return;
