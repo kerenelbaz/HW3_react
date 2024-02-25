@@ -16,31 +16,32 @@ export default function SystemAdmin(props) {
     const [users, setUsers] = useState([]);
 
     useEffect(() => {
+        // gets the users from the local storage
         const userData = localStorage.getItem('users');
-        if (userData) {
+        if (userData) { //make sure the users is exist
             const parsedUsers = JSON.parse(userData);
-            setUsers(parsedUsers);
+            setUsers(parsedUsers); //update the use state of users
         }
     }, []);
 
+    // function for delete users from the table 
     const handleDeleteRow = (username) => {
         if (username === 'admin') {
-            // Optionally show a message that admin cannot be deleted
             alert('Cannot delete admin user.');
             return;
         }
+        //filter out the user with the username that passed to the function who matches the user in the iteration
         setUsers(prevUsers => prevUsers.filter(user => user.username !== username));
     };
 
+    // function for editing the user details
     const handleEditRow = (username, field, value) => {
         setUsers(prevUsers =>
+            // change the user details with the new values
             prevUsers.map(user => (user.username === username ? { ...user, [field]: value } : user))
         );
 
     };
-
-    // filter out admin users - casue i dont want to change its details
-    const filteredUsers = users.filter(user => !user.isAdmin);
 
     return (
         <div>
@@ -63,7 +64,7 @@ export default function SystemAdmin(props) {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {filteredUsers.map((user, index) => (
+                        {users.map((user, index) => (
                             <TableRow key={index}>
                                 <TableCell>
                                     <span
