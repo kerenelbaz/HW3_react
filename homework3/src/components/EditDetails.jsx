@@ -268,8 +268,8 @@ const EditDetails = ({ user, onSave, onCancel, setIsEditingProfile }) => {
         setTimeout(() => {
           setEditing(false);
           setIsEditingProfile(false);
-          setUserData(userUpdated);
-        }, 3000);
+          setOpenSnackbarSave(true);
+        }, 3000); setUserData(userUpdated);
         window.location.reload()
       } else {
         console.log('Username is already used by another user');

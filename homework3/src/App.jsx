@@ -14,24 +14,6 @@ function App() {
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 
-  // eslint-disable-next-line no-unused-vars
-  // const handleSignInClick = () => {
-  //   setShowRegister(false);
-  // };
-
-  // eslint-disable-next-line no-unused-vars
-  // function registerUser(user) {
-  //   const updatedUsers = [...users, user];
-  //   setUsers(updatedUsers);
-  //   localStorage.setItem('users', JSON.stringify(users));
-  // }
-
-  // useEffect(() => {
-  //   const userLogged = localStorage.getItem('userLogged');
-  //   if (userLogged) {
-  //     setIsLoggedIn(true);
-  //   }
-  // }, [isLoggedIn]); // Include isLoggedIn as a dependency
   useEffect(() => {
     const userLoggedString = localStorage.getItem('userLogged');
     if (userLoggedString) {
@@ -91,7 +73,7 @@ function App() {
 
   return (
     <div>
-      <h2>Hey System Users</h2>
+
       {isLoggedIn && userLogged && isAdmin ? ( // Check if the user is logged in and is an admin
         <SystemAdmin user={userLogged} onLogout={handleLogout} />
       ) : (

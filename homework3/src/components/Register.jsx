@@ -392,7 +392,7 @@ export default function Register({ switchToLogin }) {
 
     return (
         <div >
-            <h3>Register</h3>
+            <h3>Register ✍🏼</h3>
             <form id='myForm' onSubmit={handleSubmit} style={{ maxWidth: '400px' }}>
 
                 <div style={styles.fieldContainer}>
