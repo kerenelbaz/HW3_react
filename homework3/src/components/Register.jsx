@@ -1,28 +1,22 @@
 /* eslint-disable react/prop-types */
 import { useState } from 'react';
 import React from 'react';
-
 import Button from '@mui/material/Button';
 import TaskAlt from '@mui/icons-material/TaskAlt';
 import TextField from '@mui/material/TextField';
-
 import CakeIcon from '@mui/icons-material/Cake';
 import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-
 import Autocomplete from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
-
-
 import Tooltip from '@mui/material/Tooltip';
-
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 
-// Define styles
+
 const styles = {
     fieldContainer: {
         marginBottom: '10px',
@@ -41,8 +35,6 @@ const dateInputStyle = {
     marginBottom: '10px',
 
 };
-
-
 
 
 export default function Register({ switchToLogin }) {
@@ -91,13 +83,13 @@ export default function Register({ switchToLogin }) {
 
     const cities = ['כפר יונה', 'תל אביב', 'רמת גן', 'נתניה', 'נהריה', 'גבעתיים', 'רעננה', 'הרצליה', 'חולון', 'ראשון לציון', 'חיפה', 'ירושלים', 'בנימינה', 'זכרון יעקב', 'טבריה', 'רמת השרון', 'קריית שמונה', 'קריית גת'];
 
-    // for input change
+    // function for input change
     const handleChange = (e) => {
 
         const { name, value } = e.target;
 
         let isValid = true;
-
+        //every case checks fields validity
         switch (name) {
             case 'username':
                 isValid = /^[A-Za-z0-9!@#$%^&*()-+=_]{1,60}$/.test(value);
@@ -119,7 +111,7 @@ export default function Register({ switchToLogin }) {
                 break;
 
             case 'email':
-                isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+                isValid = /^[a-zA-Z.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z-]+\.com$/.test(value);
                 break;
 
             case 'birthDate':
@@ -151,11 +143,9 @@ export default function Register({ switchToLogin }) {
 
     }
 
-
-
-    //for singing up - good form
-    const [openSnackbar, setOpenSnackbar] = React.useState(false);
-    const [openTakenUsernameSnackbar, setOpenTakenUsernameSnackbar] = React.useState(false);
+    
+    const [openSnackbar, setOpenSnackbar] = React.useState(false); //use state for singing up
+    const [openTakenUsernameSnackbar, setOpenTakenUsernameSnackbar] = React.useState(false); //use state for snackbar - give alarm if the username is already taken
 
     // for form submission
     const handleSubmit = (e) => {
@@ -167,9 +157,6 @@ export default function Register({ switchToLogin }) {
             setOpenTakenUsernameSnackbar(true);
             return;
         }
-
-        console.log("user is " + JSON.stringify(formData));
-
 
         // Check if any required fields are empty
         if (
@@ -229,16 +216,16 @@ export default function Register({ switchToLogin }) {
         });
         document.getElementById('myForm').reset();
 
-
-
         setOpenSnackbar(true);
+        setTimeout(() => {
+          window.location.reload() 
+        }, 1500);
     };
 
     const handleCloseSnackbar = (event, reason) => {
         if (reason === 'clickaway') {
             return;
         }
-
         setOpenSnackbar(false);
     };
 
@@ -246,7 +233,6 @@ export default function Register({ switchToLogin }) {
         if (reason === 'clickaway') {
             return;
         }
-
         setOpenTakenUsernameSnackbar(false);
     };
 
@@ -254,12 +240,12 @@ export default function Register({ switchToLogin }) {
     // for file change
     const handleFileChange = (e) => {
         const file = e.target.files[0];
-    
+
         if (file) {
             // Check if the file extension is .jpg or .jpeg
             const validExtensions = ['jpg', 'jpeg'];
             const fileExtension = file.name.split('.').pop().toLowerCase();
-    
+
             if (!validExtensions.includes(fileExtension)) {
                 // Set img error to true
                 setFormData(prevFormData => ({
@@ -272,7 +258,7 @@ export default function Register({ switchToLogin }) {
                 }));
             } else {
                 const reader = new FileReader();
-    
+
                 reader.onload = () => {
                     // Clear img error and set selected file
                     setFormData(prevFormData => ({
@@ -284,7 +270,7 @@ export default function Register({ switchToLogin }) {
                         }
                     }));
                 };
-    
+
                 reader.readAsDataURL(file);
             }
         }
@@ -333,59 +319,12 @@ export default function Register({ switchToLogin }) {
     };
 
 
-    // const validForm = () =>{
-    //     //checking username validation
-    //     const usernameRegex = /^[A-Za-z0-9!@#$%^&*()-+=_]{1,60}$/;
-    //     if (!formData.username.match(usernameRegex)) return false;
-
-    //     // checking passwords validation
-    //     const passwordRegex = /^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*()-+=])[A-Za-z0-9!@#$%^&*()-+=]{7,12}$/;
-    //     if(!formData.password.match(passwordRegex)) return false;
-
-    //     // checking password confirmation
-    //     if(formData.password !== formData.passwordVerify) return false;
-
-    //     // checking picture format
-    //     const isGoodPicture = ['jpg', 'ipeg'];
-    //     const fileExtenstion = formData.img.split('.').pop().toLowerCase();
-    //     if(!isGoodPicture.includes(fileExtenstion)) return false;
-
-    //     //checking firstName validation
-    //     if(typeof formData.firstName !== 'string') return false;
-    //     //checking lastName validation
-    //     if(typeof formData.lastName !== 'string') return false;
-
-    //     //checking email validation
-    //     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    //     if (!formData.email.match(emailRegex)) return false; 
-
-    //     //checking birthDate validation
-    //     // const age = new Date().getFullYear()-formData.birthDate.getFullYear();
-    //     // if(!(age>18&&age<=120)) return false;
-
-    //     //checking city validation
-    //     const cities =['תל אביב','רמת גן','נתניה','נהריה','גבעתיים','רעננה','הרצליה','חולון','ראשון לציון','חיפה','ירושלים','בנימינה','זכרון יעקב','טבריה','רמת השרון','קריית שמונה','קריית גת'];
-    //     if(!cities.includes(formData.city)) return false;
-
-    //     //checking street name validation
-    //     if(typeof formData.streetName !== 'string') return false;
-
-    //     //checking street number validation
-    //     if(isNaN(formData.houseNumber) || formData.houseNumber <= 0) return false;
-
-    //     return true;
-
-    // };
-
     const handleCityChange = (e, newCity) => {
         setFormData(prevData => ({
             ...prevData, ['city']: newCity
         }));
     }
 
-    //checkbox for not showing the password text
-    // eslint-disable-next-line no-unused-vars
-    const [showPass, setShowPass] = React.useState(false);
 
     const preventDefault = (event) => event.preventDefault();
 
@@ -453,7 +392,7 @@ export default function Register({ switchToLogin }) {
                             label={'Password'}
                             id="password"
                             name="password"
-                            type={showPass ? 'text' : 'password'}
+                            type='password'
                             onChange={handleChange}
                             required
                             autoFocus

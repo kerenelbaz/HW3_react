@@ -2,26 +2,26 @@ import { useState, useEffect } from 'react';
 import Register from './components/Register';
 import Login from './components/Login';
 import EditDetails from './components/EditDetails';
-import Profile_new from './components/Profile_new';
+import Profile from './components/Profile';
 import SystemAdmin from './components/SystemAdmin';
+
 
 function App() {
   // State variables to manage user data, authentication status, and editing profile status
-  //const [users, setUsers] = useState([]); // state variable to manage user data
   const [showRegister, setShowRegister] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false); // flag state variable to know if there is user that logged in or not
-  const [userLogged, setUserLogged] = useState(JSON.parse(localStorage.getItem('userLogged'))); //state variable to get the user who is logged in
+  const [userLogged, setUserLogged] = useState(JSON.parse(sessionStorage.getItem('userLogged'))); //state variable to get the user who is logged in
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    const userLoggedString = localStorage.getItem('userLogged');
+    const userLoggedString = sessionStorage.getItem('userLogged');
     if (userLoggedString) {
       try {
         const userLogged = JSON.parse(userLoggedString);
         setUserLogged(userLogged);
         setIsLoggedIn(true);
-        if(userLogged.username === 'admin')
+        if (userLogged.username === 'admin')
           setIsAdmin(true);
       } catch (error) {
         console.error('Error parsing userLogged data:', error);
@@ -33,28 +33,28 @@ function App() {
   }, []);
 
   const switchToLogin = () => {
-    setShowRegister(false);
+    setShowRegister(false); // Set showRegister to false to switch back to the login form
   };
 
   //function that gets triggered when the user successfully logs in. and save the active user to the local storage
   const handleLogin = (user) => {
     setUserLogged(user);
-    localStorage.setItem('userLogged', JSON.stringify(user));
+    sessionStorage.setItem('userLogged', JSON.stringify(user));
     setIsLoggedIn(true);
-    if(user.username === 'admin')
-          setIsAdmin(true);
+    if (user.username === 'admin')
+      setIsAdmin(true);
   };
-  
+
   const handleLogout = () => {
     setUserLogged(null);
-    localStorage.removeItem('userLogged');
+    sessionStorage.removeItem('userLogged');
     setIsLoggedIn(false);
     setIsAdmin(false)
   };
 
-  // const handleEditClick = () => {
-  //   setEditing(true);
-  // };
+  const handleRegisterClick = () => {
+    setShowRegister(true); // Set showRegister to true to display the registration form
+};
 
   const handleCancel = () => {
     setIsEditingProfile(false);
@@ -62,14 +62,9 @@ function App() {
 
   const handleSaveChanges = (updatedUser) => {
     setUserLogged(updatedUser);
-    localStorage.setItem('userLogged', JSON.stringify(updatedUser));
+    sessionStorage.setItem('userLogged', JSON.stringify(updatedUser));
     setIsEditingProfile(false);
   };
-
-  // //function to check if user is looged as ADMIN
-  // const toggleAdminStatus = () => {
-  //   setIsAdmin(!isAdmin);
-  // };
 
   return (
     <div>
@@ -77,19 +72,18 @@ function App() {
       {isLoggedIn && userLogged && isAdmin ? ( // Check if the user is logged in and is an admin
         <SystemAdmin user={userLogged} onLogout={handleLogout} />
       ) : (
-        // Render login/register components for regular users
         <div>
           {isLoggedIn ? (
             isEditingProfile ? (
-              <EditDetails user={userLogged} onLogout={handleLogout} setIsEditingProfile={setIsEditingProfile} onSave={handleSaveChanges} onCancel={handleCancel}/>
+              <EditDetails user={userLogged} onLogout={handleLogout} setIsEditingProfile={setIsEditingProfile} onSave={handleSaveChanges} onCancel={handleCancel} />
             ) : (
-              <Profile_new user={userLogged} onLogout={handleLogout} onEdit={setIsEditingProfile} />
+              <Profile user={userLogged} onLogout={handleLogout} onEdit={setIsEditingProfile} />
             )
           ) : (
             showRegister ? (
               <Register switchToLogin={switchToLogin} />
             ) : (
-              <Login setIsLoggedIn={setIsLoggedIn} onLogin={handleLogin} />
+              <Login setIsLoggedIn={setIsLoggedIn} onLogin={handleLogin} onRegisterClick={handleRegisterClick}/>
             )
           )}
         </div>

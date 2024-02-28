@@ -21,7 +21,7 @@ const EditDetails = ({ user, onSave, onCancel, setIsEditingProfile }) => {
 
   const [userData, setUserData] = useState(() => //useState hook for hold the user data who is being edited
   {
-    const storedUserData = JSON.parse(localStorage.getItem('userLogged'));
+    const storedUserData = JSON.parse(sessionStorage.getItem('userLogged'));
     // Check if user data exists in local storage
     if (storedUserData) {
       // If user data exists, add the 'passwordVerify' attribute
@@ -68,7 +68,7 @@ const EditDetails = ({ user, onSave, onCancel, setIsEditingProfile }) => {
   const handleSaveChanges = () => {
     // Save the changes made in the form
     // Update user data in localStorage
-    localStorage.setItem('userLogged', JSON.stringify(userData));
+    sessionStorage.setItem('userLogged', JSON.stringify(userData));
     setEditing(false);
 
   };
@@ -118,15 +118,13 @@ const EditDetails = ({ user, onSave, onCancel, setIsEditingProfile }) => {
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-    const fileName = file.name;
-    console.log('file name is' + fileName)
-    console.log('File ', file)
-
+    const fileName = file ? file.name : ''; // Handle case when file is empty
+  
     if (file) {
       // Check if the file extension is .jpg or .jpeg
       const validExtensions = ['jpg', 'jpeg'];
       const fileExtension = fileName.split('.').pop().toLowerCase();
-
+  
       if (!validExtensions.includes(fileExtension)) {
         setUserData(prevFormData => ({
           ...prevFormData,
@@ -134,7 +132,7 @@ const EditDetails = ({ user, onSave, onCancel, setIsEditingProfile }) => {
         }));
       } else {
         const reader = new FileReader();
-
+  
         reader.onload = () => {
           setUserData(prevFormData => ({
             ...prevFormData,
@@ -143,8 +141,10 @@ const EditDetails = ({ user, onSave, onCancel, setIsEditingProfile }) => {
         };
         reader.readAsDataURL(file);
       }
+    } else {
+      // If file is empty, maintain the previous value of img
+      console.log('No file uploaded, maintaining previous image');
     }
-
   };
 
   const validUsername = (username) => {
@@ -199,51 +199,44 @@ const EditDetails = ({ user, onSave, onCancel, setIsEditingProfile }) => {
     return true;
   }
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("username to send to validate is: " + userData.username);
-    console.log("password to send to validate is: " + userData.password);
-    const isValidUsername = validUsername(userData.username);
-    const isValidPassword = validPassword(userData.password);
-    const isValidVerifyPass = validVerifyPassword(userData);
-    const isValidFirstname = /^[a-zA-Z ]*$/.test(userData.firstName);
-    const isValidLastname = /^[a-zA-Z ]*$/.test(userData.lastName);
-    const isValidStreet = /^[א-ת\s]*$/.test(userData.streetName);
-    const isValidHoseNumber = validHouseNumber(userData.houseNumber);
-    const isValidBDate = validBD(userData.date);
+    const handleSubmit = (e) => {
+      e.preventDefault();
+      console.log("username to send to validate is: " + userData.username);
+      console.log("password to send to validate is: " + userData.password);
+      const isValidUsername = validUsername(userData.username);
+      const isValidPassword = validPassword(userData.password);
+      const isValidVerifyPass = validVerifyPassword(userData);
+      const isValidFirstname = /^[a-zA-Z ]*$/.test(userData.firstName);
+      const isValidLastname = /^[a-zA-Z ]*$/.test(userData.lastName);
+      const isValidStreet = /^[א-ת\s]*$/.test(userData.streetName);
+      const isValidHoseNumber = validHouseNumber(userData.houseNumber);
+      const isValidBDate = validBD(userData.date);
 
 
-
-    if (
-      userData.username === '' ||
-      userData.password === '' ||
-      userData.passwordVerify === '' ||
-      userData.firstName === '' ||
-      userData.lastName === '' ||
-      userData.streetName === '' ||
-      userData.houseNumber === ''
-    ) {
-      return;
-    }
-
-    if (isValidUsername && isValidPassword && isValidVerifyPass && isValidFirstname && isValidLastname && isValidStreet && isValidHoseNumber && isValidBDate) {
-
-      const users = JSON.parse(localStorage.getItem('users'));
-      const userLoggedin = JSON.parse(localStorage.getItem('userLogged')).username;
-      const usernameToUpdate = userLoggedin;
-      const userToUpdateIndex = users.findIndex(user => user.username === usernameToUpdate);
-
-      const storedUsers = JSON.parse(localStorage.getItem('users')) || [];
-      const isUsernameTaken = storedUsers.some(user => user.username === userData.username);
-
-      // Check if the new username is different from the original one and if it's already taken
-      const isUsernameTakenByAnotherUser = isUsernameTaken && users[userToUpdateIndex].username !== userData.username;
-      const isUsernameTakenByCurrentUser = isUsernameTaken && users[userToUpdateIndex].username === userData.username;
-
-      if (isUsernameTakenByAnotherUser) {
-        setOpenTakenUsernameSnackbar(true);
-        return;
+      //checks if the fields are empty
+      if (userData.username === '' || userData.password === '' || userData.passwordVerify === '' ||
+          userData.firstName === '' || userData.lastName === '' ||userData.streetName === '' || userData.houseNumber === '') {
+          return;
       }
+
+      if (isValidUsername && isValidPassword && isValidVerifyPass && isValidFirstname && isValidLastname && isValidStreet && isValidHoseNumber && isValidBDate) {
+
+        const users = JSON.parse(localStorage.getItem('users'));
+        const userLoggedin = JSON.parse(sessionStorage.getItem('userLogged')).username;
+        const usernameToUpdate = userLoggedin;
+        const userToUpdateIndex = users.findIndex(user => user.username === usernameToUpdate);
+
+        const storedUsers = JSON.parse(localStorage.getItem('users')) || [];
+        const isUsernameTaken = storedUsers.some(user => user.username === userData.username);
+
+        // Check if the new username is different from the original one and if it's already taken
+        const isUsernameTakenByAnotherUser = isUsernameTaken && users[userToUpdateIndex].username !== userData.username;
+        const isUsernameTakenByCurrentUser = isUsernameTaken && users[userToUpdateIndex].username === userData.username;
+
+        if (isUsernameTakenByAnotherUser) {
+          setOpenTakenUsernameSnackbar(true);
+          return;
+        }
 
       // Check if the new username is different from the original one and if it's not taken
       if (isUsernameTakenByCurrentUser || !isUsernameTaken) {
@@ -263,14 +256,18 @@ const EditDetails = ({ user, onSave, onCancel, setIsEditingProfile }) => {
         localStorage.setItem('users', JSON.stringify(users));
         setOpenSnackbarSave(true);
 
-        localStorage.setItem('userLogged', JSON.stringify(userUpdated));
+        sessionStorage.setItem('userLogged', JSON.stringify(userUpdated));
 
         setTimeout(() => {
           setEditing(false);
           setIsEditingProfile(false);
           setOpenSnackbarSave(true);
-        }, 3000); setUserData(userUpdated);
-        window.location.reload()
+        }, 3000); 
+        setUserData(userUpdated);
+        setTimeout(() => {
+          window.location.reload()
+        }, 3000);
+        
       } else {
         console.log('Username is already used by another user');
         setOpenTakenUsernameSnackbar(true);
@@ -392,7 +389,7 @@ const EditDetails = ({ user, onSave, onCancel, setIsEditingProfile }) => {
             name="img"
             accept=".jpg, .jpeg"
             onChange={handleFileChange}
-            required
+            
 
             style={{ paddingTop: '20px', paddingBottom: '10px', fontSize: '16px' }}
           />
