@@ -16,6 +16,7 @@ import moment from 'moment';
 
 
 export default function Profile({ user, onLogout, onEdit }) {
+    console.log('Profile')
     Profile.propTypes = {
         user: PropTypes.object.isRequired,
         onLogout: PropTypes.func.isRequired,

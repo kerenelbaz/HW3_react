@@ -23,7 +23,7 @@ const styles = {
     },
 };
 // setIsLoggedIn and onLogin passed from the father
-export default function Login({ setIsLoggedIn, onLogin ,onRegisterClick}) {
+export default function Login({ setIsLoggedIn, onLogin, onRegisterClick }) {
 
     Login.propTypes = {
         setIsLoggedIn: PropTypes.func.isRequired,
@@ -45,7 +45,7 @@ export default function Login({ setIsLoggedIn, onLogin ,onRegisterClick}) {
         }));
     }
 
-    
+
 
     // function loginUser - retrieve the username and password from the form data state
     const handleSubmit = (e) => {
@@ -68,7 +68,7 @@ export default function Login({ setIsLoggedIn, onLogin ,onRegisterClick}) {
                 formData.username = 'admin';
                 formData.password = 'ad12343211ad';
                 sessionStorage.setItem('userLogged', JSON.stringify(formData));
-                setIsLoggedIn(true);
+                setIsLoggedIn(true); window.location.reload();
             }
             else { //no user was found match to the username of password
                 setLoginFailed(true); // prompt the alert for login faild
@@ -78,7 +78,7 @@ export default function Login({ setIsLoggedIn, onLogin ,onRegisterClick}) {
             setLoginFailed(true); // prompt the alert for login faild
         }
 
-        
+
     }
 
 
@@ -123,7 +123,7 @@ export default function Login({ setIsLoggedIn, onLogin ,onRegisterClick}) {
             {loginFailed && (
                 <Alert severity="error">
                     <AlertTitle>Error</AlertTitle>
-                    Incorrect username or password.
+                    Incorrect use rname or password.
                 </Alert>
             )}
 
